@@ -159,6 +159,10 @@
 </template>
 
 <script setup lang="ts">
+import StatCard from '~/components/ui/StatCard.vue'
+import ActivityFeed from '~/components/ui/ActivityFeed.vue'
+import ActivityItem from '~/components/ui/ActivityItem.vue'
+import QuickActions from '~/components/ui/QuickActions.vue'
 import { useDashboard } from '~/composables/dashboard/useDashboard'
 
 const { activities, quickActions, handleViewAll } = useDashboard()

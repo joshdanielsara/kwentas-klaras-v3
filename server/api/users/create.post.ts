@@ -1,6 +1,4 @@
-import { getFirebaseAuth } from '../../lib/firebase'
-import { connectToMongoDB } from '../../lib/mongodb'
-import User from '../../models/User'
+import { UserService } from '../../services/user/UserService'
 import type { CreateUserRequest } from '../../types/user/createUserRequest'
 import { withErrorHandler } from '../../utils/errorHandler'
 
@@ -30,61 +28,20 @@ export default defineEventHandler(async (event) => {
   }
 
   return await withErrorHandler(async () => {
-    await connectToMongoDB()
-
-    const existingUser = await User.findOne({
-      $or: [
-        { email: body.email.toLowerCase() },
-        { username: body.username }
-      ]
-    })
-
-    if (existingUser) {
-      throw createError({
-        statusCode: 409,
-        message: existingUser.email === body.email.toLowerCase()
-          ? 'User with this email already exists'
-          : 'User with this username already exists'
-      })
-    }
-
-    const firebaseAuth = getFirebaseAuth()
-
-    const firebaseUser = await firebaseAuth.createUser({
-      email: body.email.toLowerCase(),
+    const userService = new UserService()
+    const user = await userService.create({
+      firstName: body.firstName,
+      lastName: body.lastName,
+      username: body.username,
+      email: body.email,
       password: body.password,
-      displayName: `${body.firstName} ${body.lastName}`,
-      emailVerified: false,
-    })
-
-    const username = body.username.startsWith('@') ? body.username : `@${body.username}`
-
-    const user = new User({
-      firebaseId: firebaseUser.uid,
-      firstName: body.firstName.trim(),
-      lastName: body.lastName.trim(),
-      username: username.trim(),
-      email: body.email.toLowerCase().trim(),
       department: body.department,
-      status: body.status || 'Active',
-      joined: new Date(),
+      status: body.status,
     })
-
-    await user.save()
 
     return {
       success: true,
-      user: {
-        id: user._id.toString(),
-        firebaseId: user.firebaseId,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        username: user.username,
-        email: user.email,
-        department: user.department,
-        status: user.status,
-        joined: user.joined ? new Date(user.joined).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : undefined,
-      }
+      user,
     }
   }, {
     defaultStatusCode: 500,

@@ -11,7 +11,10 @@
       </button>
     </div>
     <div class="space-y-4">
-      <slot>
+      <template v-if="$slots.default">
+        <slot />
+      </template>
+      <template v-else-if="activities && activities.length > 0">
         <ActivityItem
           v-for="(activity, index) in activities"
           :key="index"
@@ -24,12 +27,13 @@
             <slot :name="`activity-icon-${index}`" />
           </template>
         </ActivityItem>
-      </slot>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import ActivityItem from '~/components/ui/ActivityItem.vue'
 import type { ActivityFeedProps } from '~/types/ui/activityFeed'
 
 const props = withDefaults(defineProps<ActivityFeedProps>(), {
