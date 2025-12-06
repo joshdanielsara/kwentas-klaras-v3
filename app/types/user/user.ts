@@ -10,3 +10,7 @@ export interface User {
   joined?: string | Date
 }
 
+export interface UserWithPassword extends User {
+  password?: string
+}
+
