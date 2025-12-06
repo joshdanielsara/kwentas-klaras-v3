@@ -1,5 +1,4 @@
-import { connectToMongoDB } from '../../lib/mongodb'
-import User from '../../models/User'
+import { UserService } from '../../services/user/UserService'
 import { withErrorHandler } from '../../utils/errorHandler'
 
 export default defineEventHandler(async (event) => {
@@ -13,9 +12,8 @@ export default defineEventHandler(async (event) => {
   }
 
   return await withErrorHandler(async () => {
-    await connectToMongoDB()
-
-    const user = await User.findById(id).lean()
+    const userService = new UserService()
+    const user = await userService.get(id)
 
     if (!user) {
       throw createError({
@@ -26,17 +24,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
-      user: {
-        id: user._id.toString(),
-        firebaseId: user.firebaseId,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        username: user.username,
-        email: user.email,
-        department: user.department,
-        status: user.status,
-        joined: user.joined ? new Date(user.joined).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : undefined,
-      }
+      user,
     }
   }, {
     defaultStatusCode: 500,
