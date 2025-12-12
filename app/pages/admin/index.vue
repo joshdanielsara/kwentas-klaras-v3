@@ -111,6 +111,7 @@
 import StatCard from '~/components/ui/StatCard.vue'
 import ActivityFeed from '~/components/ui/ActivityFeed.vue'
 import PieChart from '~/components/ui/PieChart.vue'
+import { getStatIconColor, getIconBgColor } from '~/constants/ui/statColors'
 import { useDashboard } from '~/composables/dashboard/useDashboard'
 import { useUtilizationRate } from '~/composables/dashboard/useUtilizationRate'
 
@@ -152,34 +153,5 @@ const stats = [
   }
 ]
 
-const getStatIconColor = (color: string) => {
-  switch (color) {
-    case 'blue':
-      return 'text-brand-blue'
-    case 'purple':
-      return 'text-purple-600'
-    case 'green':
-      return 'text-brand-green'
-    case 'orange':
-      return 'text-orange-600'
-    default:
-      return 'text-gray-500'
-  }
-}
-
-const getIconBgColor = (color: string) => {
-  switch (color) {
-    case 'blue':
-      return 'bg-brand-blue/10'
-    case 'purple':
-      return 'bg-purple-100'
-    case 'green':
-      return 'bg-brand-green/10'
-    case 'orange':
-      return 'bg-orange-100'
-    default:
-      return 'bg-gray-100'
-  }
-}
 </script>
 
