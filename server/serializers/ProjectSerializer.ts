@@ -1,18 +1,21 @@
 import type { Project } from '@prisma/client';
 
 export class ProjectSerializer {
-  static formatProject(project: Project) {
-    return {
-      id: project.id,
-      name: project.name,
-      implementingUnit: project.implementingUnit,
-      appropriation: project.appropriation,
-      startDate: project.startDate,
-      endDate: project.endDate,
-      year: project.year,
-      services: project.services,
-    };
-  }
+          static formatProject(project: Project) {
+            return {
+              id: project.id,
+              name: project.name,
+              implementingUnit: project.implementingUnit,
+              location: project.location,
+              appropriation: project.appropriation,
+              startDate: project.startDate,
+              endDate: project.endDate,
+              year: project.year,
+              services: project.services,
+              remarks: project.remarks,
+              code: project.code,
+            };
+          }
 
   static list(projects: Project[]) {
     return projects.map(project => this.formatProject(project));

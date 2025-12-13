@@ -34,20 +34,51 @@ model Service {
   @@map("services")
 }
 
+model Department {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String    @unique
+  createdAt DateTime? @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  @@map("departments")
+}
+
+model Location {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String    @unique
+  createdAt DateTime? @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  @@map("locations")
+}
+
+model Remark {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String    @unique
+  createdAt DateTime? @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  @@map("remarks")
+}
+
 model Project {
   id               String    @id @default(auto()) @map("_id") @db.ObjectId
   name             String
   implementingUnit String?   @map("implementing_unit")
+  location         String?
   appropriation    Float
   startDate        DateTime? @map("start_date")
   endDate          DateTime? @map("end_date")
   year             Int
   services         String
+  remarks          String?
+  code             String?
   createdAt        DateTime? @default(now()) @map("created_at")
   updatedAt        DateTime? @updatedAt @map("updated_at")
 
   @@index([name])
   @@index([implementingUnit])
+  @@index([location])
   @@index([year])
   @@index([startDate])
   @@index([endDate])

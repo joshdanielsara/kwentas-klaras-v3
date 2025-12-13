@@ -13,11 +13,14 @@ export const useProjectForm = () => {
   const form = reactive({
     name: '',
     implementingUnit: '',
+    location: '',
     appropriation: 0,
     year: currentYear,
     startDate: defaultStartDate,
     endDate: defaultEndDate,
     services: '',
+    remarks: '',
+    code: '',
   })
 
   const loading = ref(false)
@@ -39,9 +42,12 @@ export const useProjectForm = () => {
       const projectData: Project = {
         name: form.name || `${form.implementingUnit} - ${form.year}`,
         implementingUnit: form.implementingUnit,
+        location: form.location,
         appropriation: form.appropriation,
         year: form.year,
         services: form.services,
+        remarks: form.remarks,
+        code: form.code,
         startDate: new Date(form.startDate),
         endDate: new Date(form.endDate),
       }

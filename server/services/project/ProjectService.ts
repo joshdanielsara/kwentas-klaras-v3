@@ -19,66 +19,87 @@ export class ProjectService {
     return ProjectSerializer.detail(project);
   }
 
-  async create(data: {
-    name: string;
-    implementingUnit?: string;
-    appropriation: number;
-    year: number;
-    services: string;
-    startDate: Date;
-    endDate: Date;
-  }) {
-    const project = await this.repo.create({
-      name: data.name.trim(),
-      implementingUnit: data.implementingUnit,
-      appropriation: data.appropriation,
-      year: data.year,
-      services: data.services,
-      startDate: new Date(data.startDate),
-      endDate: new Date(data.endDate),
-    });
+          async create(data: {
+            name: string;
+            implementingUnit?: string;
+            location?: string;
+            appropriation: number;
+            year: number;
+            services: string;
+            remarks?: string;
+            code?: string;
+            startDate: Date;
+            endDate: Date;
+          }) {
+            const project = await this.repo.create({
+              name: data.name.trim(),
+              implementingUnit: data.implementingUnit,
+              location: data.location,
+              appropriation: data.appropriation,
+              year: data.year,
+              services: data.services,
+              remarks: data.remarks,
+              code: data.code,
+              startDate: new Date(data.startDate),
+              endDate: new Date(data.endDate),
+            });
 
     return ProjectSerializer.detail(project);
   }
 
-  async update(id: string, data: {
-    name?: string;
-    implementingUnit?: string;
-    appropriation?: number;
-    year?: number;
-    services?: string;
-    startDate?: Date;
-    endDate?: Date;
-  }) {
-    const updateData: Prisma.ProjectUpdateInput = {};
+          async update(id: string, data: {
+            name?: string;
+            implementingUnit?: string;
+            location?: string;
+            appropriation?: number;
+            year?: number;
+            services?: string;
+            remarks?: string;
+            code?: string;
+            startDate?: Date;
+            endDate?: Date;
+          }) {
+            const updateData: Prisma.ProjectUpdateInput = {};
 
-    if (data.name !== undefined) {
-      updateData.name = data.name.trim();
-    }
+            if (data.name !== undefined) {
+              updateData.name = data.name.trim();
+            }
 
-    if (data.implementingUnit !== undefined) {
-      updateData.implementingUnit = data.implementingUnit;
-    }
+            if (data.implementingUnit !== undefined) {
+              updateData.implementingUnit = data.implementingUnit;
+            }
 
-    if (data.appropriation !== undefined) {
-      updateData.appropriation = data.appropriation;
-    }
+            if (data.location !== undefined) {
+              updateData.location = data.location;
+            }
 
-    if (data.year !== undefined) {
-      updateData.year = data.year;
-    }
+            if (data.appropriation !== undefined) {
+              updateData.appropriation = data.appropriation;
+            }
 
-    if (data.services !== undefined) {
-      updateData.services = data.services;
-    }
+            if (data.year !== undefined) {
+              updateData.year = data.year;
+            }
 
-    if (data.startDate !== undefined) {
-      updateData.startDate = new Date(data.startDate);
-    }
+            if (data.services !== undefined) {
+              updateData.services = data.services;
+            }
 
-    if (data.endDate !== undefined) {
-      updateData.endDate = new Date(data.endDate);
-    }
+            if (data.remarks !== undefined) {
+              updateData.remarks = data.remarks;
+            }
+
+            if (data.code !== undefined) {
+              updateData.code = data.code;
+            }
+
+            if (data.startDate !== undefined) {
+              updateData.startDate = new Date(data.startDate);
+            }
+
+            if (data.endDate !== undefined) {
+              updateData.endDate = new Date(data.endDate);
+            }
 
     const project = await this.repo.updateById(id, updateData);
     return ProjectSerializer.detail(project);
