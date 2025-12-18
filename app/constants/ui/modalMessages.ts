@@ -8,6 +8,13 @@ export const MODAL_MESSAGES = {
     cancelText: 'Cancel',
     loadingText: 'Creating...',
   },
+  UPDATE_PROJECT: {
+    title: 'Update Project',
+    message: 'Are you sure you want to update this project? Please review all the information before confirming.',
+    confirmText: 'Update Project',
+    cancelText: 'Cancel',
+    loadingText: 'Updating...',
+  },
   DEFAULT: {
     title: 'Confirm Action',
     message: 'Are you sure you want to proceed?',

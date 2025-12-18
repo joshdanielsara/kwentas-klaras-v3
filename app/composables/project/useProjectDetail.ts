@@ -236,7 +236,7 @@ export const useProjectDetail = (projectId: string) => {
     }
   })
 
-  const { timelineProgress, timelineMilestones, daysRemaining } = useProjectTimeline(project)
+  const { timelineProgress, timelineMilestones, daysRemaining } = useProjectTimeline(project, activities)
 
   return {
     project: readonly(project),
@@ -246,6 +246,7 @@ export const useProjectDetail = (projectId: string) => {
     tabs,
     auditLogs,
     activitiesLoading: readonly(activitiesLoading),
+    activities: readonly(activities),
     projectStatus,
     projectStatusClass,
     formatDuration,

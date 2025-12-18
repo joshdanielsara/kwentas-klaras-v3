@@ -366,7 +366,10 @@
                         <div class="ml-8 flex-1">
                           <div class="bg-white backdrop-blur-sm rounded-full px-4 py-2.5 border w-full border-gray-100/50 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-200 group">
                             <div class="flex items-center justify-between gap-3">
-                              <h3 class="text-base font-semibold text-gray-900 group-hover:text-gray-900 transition-colors flex-1">{{ milestone.label }}</h3>
+                              <div class="flex-1">
+                                <h3 class="text-base font-semibold text-gray-900 group-hover:text-gray-900 transition-colors">{{ milestone.label }}</h3>
+                                <p v-if="milestone.isActivity && milestone.description" class="text-xs text-gray-600 mt-0.5">{{ milestone.description }}</p>
+                              </div>
                               <span :class="[
                                 'text-sm font-medium px-3 py-1.5 rounded-full transition-all duration-200 ml-2 w-fit',
                                 milestone.isCurrent 
@@ -607,6 +610,7 @@ const {
   tabs,
   auditLogs,
   activitiesLoading,
+  activities,
   projectStatus,
   projectStatusClass,
   formatDuration,
