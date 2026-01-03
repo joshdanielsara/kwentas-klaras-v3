@@ -5,10 +5,10 @@ import { withErrorHandler } from '../../utils/errorHandler'
 export default defineEventHandler(async (event) => {
   const body = await readBody<CreateUserRequest>(event)
 
-  if (!body.firstName || !body.lastName || !body.username || !body.email || !body.password || !body.department) {
+  if (!body.firstName || !body.lastName || !body.username || !body.email || !body.department) {
     throw createError({
       statusCode: 400,
-      message: 'Missing required fields: firstName, lastName, username, email, password, department'
+      message: 'Missing required fields: firstName, lastName, username, email, department'
     })
   }
 
@@ -20,13 +20,6 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (body.password.length < 6) {
-    throw createError({
-      statusCode: 400,
-      message: 'Password must be at least 6 characters long'
-    })
-  }
-
   return await withErrorHandler(async () => {
     const userService = new UserService()
     const user = await userService.create({
@@ -34,9 +27,9 @@ export default defineEventHandler(async (event) => {
       lastName: body.lastName,
       username: body.username,
       email: body.email,
-      password: body.password,
       department: body.department,
       status: body.status,
+      role: body.role,
     })
 
     return {

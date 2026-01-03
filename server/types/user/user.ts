@@ -6,6 +6,7 @@ export interface IUser {
   lastName: string
   username: string
   email: string
+  role: string
   department: UserDepartment
   status: 'Active' | 'Inactive'
   joined?: Date

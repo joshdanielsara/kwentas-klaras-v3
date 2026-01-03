@@ -5,8 +5,8 @@ export interface CreateUserRequest {
   lastName: string
   username: string
   email: string
-  password: string
   department: UserDepartment
   status?: 'Active' | 'Inactive'
+  role?: string
 }
 

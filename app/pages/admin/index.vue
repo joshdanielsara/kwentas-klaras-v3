@@ -8,8 +8,8 @@
           <PageHeader
             :title="PAGE_HEADERS.dashboard.title"
             :description="PAGE_HEADERS.dashboard.description"
-            :button-text="PAGE_HEADERS.dashboard.buttonText"
-            :button-action="() => navigateTo('/admin/projects')"
+            :button-text="dashboardButtonText"
+            :button-action="dashboardButtonAction"
             :stats="headerStats"
           >
             <template #icon-0="{ stat }">
@@ -79,9 +79,19 @@ import { PAGE_HEADERS } from '~/constants/pages/headers'
 import { getStatIconColor, getIconBgColor } from '~/constants/ui/statColors'
 import { useDashboard } from '~/composables/dashboard/useDashboard'
 import { useUtilizationRate } from '~/composables/dashboard/useUtilizationRate'
+import { useUserPermissions } from '~/composables/user/useUserPermissions'
 
 const { activities, handleViewAll } = useDashboard()
 const { chartOptions, chartSeries } = useUtilizationRate()
+const { canManageProjects } = useUserPermissions()
+
+const dashboardButtonText = computed(() => {
+  return canManageProjects.value ? PAGE_HEADERS.dashboard.buttonText : undefined
+})
+
+const dashboardButtonAction = computed(() => {
+  return canManageProjects.value ? () => { navigateTo('/admin/projects/add') } : undefined
+})
 
 const stats = [
   {

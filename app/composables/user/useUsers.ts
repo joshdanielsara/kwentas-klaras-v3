@@ -21,10 +21,6 @@ export const useUsers = () => {
       if (editingUser && editingUser.id) {
         await userStore.updateUser(editingUser.id, userData)
       } else {
-        if (!userData.password) {
-          throw new Error('Password is required for new users')
-        }
-        
         const usernameWithoutAt = userData.username.startsWith('@') 
           ? userData.username.slice(1) 
           : userData.username
@@ -34,9 +30,9 @@ export const useUsers = () => {
           lastName: userData.lastName,
           username: usernameWithoutAt,
           email: userData.email,
-          password: userData.password,
           department: userData.department,
           status: userData.status || 'Active',
+          role: userData.role,
         })
       }
     }, {

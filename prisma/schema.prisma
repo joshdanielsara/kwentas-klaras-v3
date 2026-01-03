@@ -14,6 +14,7 @@ model User {
   lastName   String?   @map("last_name")
   username   String?   @unique
   email      String?   @unique
+  role       String    @default("staffs")
   department String?
   status     String?   @default("Active")
   joined     DateTime?
@@ -22,6 +23,7 @@ model User {
 
   @@index([department])
   @@index([status])
+  @@index([role])
   @@map("users")
 }
 

@@ -2,6 +2,8 @@ import { UserRepository } from '../../repositories/user/UserRepository';
 import { UserSerializer } from '../../serializers/UserSerializer';
 import type { Prisma, PrismaClient } from '@prisma/client';
 import { getFirebaseAuth } from '../../lib/firebase';
+import { generateRandomPassword } from '../../utils/passwordGenerator';
+import { EmailService } from '../email/EmailService';
 
 export class UserService {
   private repo: UserRepository;
@@ -25,7 +27,7 @@ export class UserService {
     lastName: string;
     username: string;
     email: string;
-    password: string;
+    role?: string;
     department: string;
     status?: string;
   }) {
@@ -41,10 +43,13 @@ export class UserService {
       throw new Error('User with this username already exists');
     }
 
+    // Generate random password
+    const password = generateRandomPassword(12);
+
     const firebaseAuth = getFirebaseAuth();
     const firebaseUser = await firebaseAuth.createUser({
       email: data.email.toLowerCase(),
-      password: data.password,
+      password: password,
       displayName: `${data.firstName} ${data.lastName}`,
       emailVerified: false,
     });
@@ -58,12 +63,29 @@ export class UserService {
       lastName: data.lastName.trim(),
       username: username.trim(),
       email: data.email.toLowerCase().trim(),
+      role: data.role || 'staffs',
       department: data.department,
       status: data.status || 'Active',
       joined: now,
       createdAt: now,
       updatedAt: now,
     });
+
+    try {
+      const emailService = new EmailService();
+      const roleDisplayName = (data.role || 'staffs') === 'admin' ? 'Admin' : 'Staff';
+      const usernameWithoutAt = username.startsWith('@') ? username.slice(1) : username;
+      await emailService.sendCredentialsEmail({
+        name: `${data.firstName} ${data.lastName}`,
+        email: data.email.toLowerCase(),
+        username: usernameWithoutAt,
+        password: password,
+        department: data.department,
+        role: roleDisplayName,
+      });
+    } catch (error: any) {
+      console.error('Failed to send credentials email:', error);
+    }
 
     return UserSerializer.detail(user);
   }

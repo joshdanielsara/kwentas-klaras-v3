@@ -3,6 +3,12 @@ export interface ProjectDetails {
   appropriation?: number
 }
 
+export interface UserDetails {
+  name?: string
+  role?: string
+  email?: string
+}
+
 export interface ConfirmModalProps {
   isOpen: boolean
   title?: string
@@ -11,6 +17,9 @@ export interface ConfirmModalProps {
   cancelText?: string
   loading?: boolean
   loadingText?: string
+  autoCloseSeconds?: number
+  countDownMessage?: string
   projectDetails?: ProjectDetails
+  userDetails?: UserDetails
 }
 

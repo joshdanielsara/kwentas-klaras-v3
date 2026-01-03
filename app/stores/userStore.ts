@@ -27,9 +27,9 @@ export const useUserStore = () => {
     lastName: string
     username: string
     email: string
-    password: string
     department: string
     status?: 'Active' | 'Inactive'
+    role?: string
   }) => {
     loading.value = true
     error.value = null
@@ -37,7 +37,15 @@ export const useUserStore = () => {
     try {
       const response = await $fetch<{ success: boolean; user: User }>('/api/users/create', {
         method: 'POST',
-        body: userData,
+        body: {
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          username: userData.username,
+          email: userData.email,
+          department: userData.department,
+          status: userData.status,
+          role: userData.role,
+        },
       })
 
       if (response.success) {

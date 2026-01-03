@@ -9,6 +9,7 @@ export class UserSerializer {
       lastName: user.lastName,
       username: user.username,
       email: user.email,
+      role: user.role,
       department: user.department,
       status: user.status,
       joined: user.joined ? new Date(user.joined).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : undefined,

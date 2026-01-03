@@ -6,7 +6,10 @@
       <div class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-brand-bg">
         <div class="space-y-6 min-h-full flex flex-col">
           <div class="flex items-center justify-between">
-            <h1 class="text-2xl font-semibold text-gray-900">All Projects</h1>
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900 mb-1">All Projects</h1>
+              <p class="text-sm text-gray-500">Manage and track all projects</p>
+            </div>
             <div class="flex items-center gap-4">
               <div class="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
                 <button
@@ -14,7 +17,7 @@
                   :class="[
                     'px-4 py-2 text-sm font-medium rounded-md transition-colors',
                     filterType === PROJECT_FILTER_TYPES.ALL
-                      ? 'bg-white text-indigo-600 shadow-sm'
+                      ? 'bg-white text-blue-600 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   ]"
                 >
@@ -25,7 +28,7 @@
                   :class="[
                     'px-4 py-2 text-sm font-medium rounded-md transition-colors',
                     filterType === PROJECT_FILTER_TYPES.CURRENT
-                      ? 'bg-white text-indigo-600 shadow-sm'
+                      ? 'bg-white text-blue-600 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   ]"
                 >
@@ -36,7 +39,7 @@
                   :class="[
                     'px-4 py-2 text-sm font-medium rounded-md transition-colors',
                     filterType === PROJECT_FILTER_TYPES.CONTINUING
-                      ? 'bg-white text-indigo-600 shadow-sm'
+                      ? 'bg-white text-blue-600 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   ]"
                 >
@@ -49,6 +52,9 @@
                   placeholder="Search by project name or code..."
                 />
               </div>
+              <button v-if="canManageProjects" @click="goToAddProject" class="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+                Add Project
+              </button>
             </div>
           </div>
 
@@ -89,63 +95,51 @@
               <p class="text-sm text-gray-500 mt-1">Try adjusting your search criteria.</p>
             </div>
 
-            <div v-else class="space-y-2 flex-1">
+            <div v-else class="space-y-3 flex-1">
               <div
                 v-for="project in filteredProjects"
                 :key="project.id"
-                class="project-card bg-white border border-gray-200 rounded-lg p-5 hover:shadow-lg transition-all duration-200 hover:border-indigo-300"
+                class="project-card bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-blue-300 transition-all duration-200"
               >
-                <div class="flex items-center justify-between gap-6">
-                  <div class="flex-1 grid grid-cols-12 gap-3 items-center">
-                    <div class="col-span-2">
-                      <div class="text-lg font-semibold text-gray-900 mb-1">{{ project.name }}</div>
-                      <div class="text-xs text-gray-500">Code: {{ project.code || 'N/A' }}</div>
+                <div class="flex items-center gap-6">
+                  <div class="flex items-start gap-4 flex-1 min-w-0">
+                    <div class="flex-shrink-0">
+                      <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
                     </div>
-                    <div class="col-span-2">
-                      <div class="text-xs text-gray-500 mb-1.5">Implementing Unit</div>
-                      <div>
-                        <span v-if="project.implementingUnit" class="inline-flex text-xs font-medium px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800">
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center gap-3 mb-2">
+                        <h3 class="text-lg font-bold text-gray-900 truncate">{{ project.name }}</h3>
+                        <span v-if="project.code" class="px-2 py-0.5 inline-flex text-xs font-semibold rounded-full bg-gray-100 text-gray-700">
+                          {{ project.code }}
+                        </span>
+                      </div>
+                      <div class="flex items-center gap-4 flex-wrap">
+                        <span v-if="project.implementingUnit" class="inline-flex text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
                           {{ project.implementingUnit }}
                         </span>
-                        <span v-else class="text-xs text-gray-400">N/A</span>
-                      </div>
-                    </div>
-                    <div class="col-span-2">
-                      <div class="text-xs text-gray-500 mb-1.5">Location</div>
-                      <div class="text-sm font-medium text-gray-900">{{ project.location || 'N/A' }}</div>
-                    </div>
-                    <div class="col-span-2">
-                      <div class="text-xs text-gray-500 mb-1.5">Appropriation</div>
-                      <div class="text-sm font-bold text-gray-900">₱{{ formatNumber(project.appropriation) }}</div>
-                    </div>
-                    <div class="col-span-1">
-                      <div class="text-xs text-gray-500 mb-1.5">Year</div>
-                      <div class="text-sm font-medium text-gray-900">{{ project.year }}</div>
-                    </div>
-                    <div class="col-span-3">
-                      <div class="text-xs text-gray-500 mb-1.5">Duration</div>
-                      <div class="text-sm text-gray-900 leading-tight">
-                        <template v-if="project.startDate || project.endDate">
+                        <span v-if="project.location" class="text-sm text-gray-600">{{ project.location }}</span>
+                        <span class="text-sm font-bold text-gray-900">₱{{ formatNumber(project.appropriation) }}</span>
+                        <span class="text-xs text-gray-500">{{ project.year }}</span>
+                        <span v-if="project.startDate || project.endDate" class="text-xs text-gray-500">
                           {{ formatDate(project.startDate) }} - {{ formatDate(project.endDate) }}
-                        </template>
-                        <template v-else>
-                          <span class="text-gray-400">No dates</span>
-                        </template>
+                        </span>
                       </div>
                     </div>
                   </div>
                   <div class="flex items-center flex-shrink-0">
-                    <button @click.stop="goToProject(project)" class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                      Go to Project
+                    <button @click.stop="goToProject(project)" class="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+                      View Project
                     </button>
-          </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div v-if="filteredProjects.length > 0" class="mt-6 flex items-center justify-between">
-              <div class="text-sm text-gray-700">
-                Showing <span class="font-medium">{{ filteredProjects.length }}</span> of <span class="font-medium">{{ projects.length }}</span> projects
+            <div v-if="filteredProjects.length > 0" class="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
+              <div class="text-sm text-gray-600">
+                Showing <span class="font-bold text-gray-900">{{ filteredProjects.length }}</span> of <span class="font-bold text-gray-900">{{ projects.length }}</span> projects
               </div>
             </div>
           </section>
@@ -168,11 +162,13 @@ import { useProjectSearch } from '~/composables/project/useProjectSearch'
 import { useProjectFormatting } from '~/composables/project/useProjectFormatting'
 import { PROJECT_FILTER_TYPES, type ProjectFilterType } from '~/constants/project/filterTypes'
 import { getIconBgColor } from '~/constants/ui/statColors'
+import { useUserPermissions } from '~/composables/user/useUserPermissions'
 
 const searchQuery = ref('')
 const filterType = ref<ProjectFilterType>(PROJECT_FILTER_TYPES.ALL)
 
 const { projects, saveError, fetchProjects, projectStats } = useProjects()
+const { canManageProjects } = useUserPermissions()
 
 const displayStats = computed(() => projectStats.value.slice(0, 3))
 const { filteredProjects: searchFilteredProjects } = useProjectSearch(projects, searchQuery)
@@ -214,5 +210,9 @@ const router = useRouter()
 
 const goToProject = (project: any) => {
   router.push(`/admin/projects/${project.id}`)
+}
+
+const goToAddProject = () => {
+  router.push('/admin/projects/add')
 }
 </script>

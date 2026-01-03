@@ -64,7 +64,7 @@
 
 <script setup lang="ts">
 import Button from './Button.vue'
-import { MODAL_MESSAGES, getProjectConfirmMessage } from '~/constants/ui/modalMessages'
+import { MODAL_MESSAGES, getProjectConfirmMessage, getUserConfirmMessage } from '~/constants/ui/modalMessages'
 import { formatCurrency } from '~/utils/currency'
 import type { ConfirmModalProps } from '~/types/ui/confirmModal'
 
@@ -95,6 +95,9 @@ const formatAppropriation = (value: number): string => {
 const displayMessage = computed(() => {
   if (props.projectDetails) {
     return getProjectConfirmMessage(props.projectDetails.name, props.projectDetails.appropriation)
+  }
+  if (props.userDetails) {
+    return getUserConfirmMessage(props.userDetails.name, props.userDetails.role, props.userDetails.email)
   }
   return message.value
 })

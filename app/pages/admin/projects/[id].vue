@@ -43,6 +43,7 @@
                   Back
                 </button>
                 <button
+                  v-if="canManageProjects"
                   @click="handleEdit"
                   class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                 >
@@ -366,7 +367,10 @@
                         <div class="ml-8 flex-1">
                           <div class="bg-white backdrop-blur-sm rounded-full px-4 py-2.5 border w-full border-gray-100/50 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-200 group">
                             <div class="flex items-center justify-between gap-3">
-                              <h3 class="text-base font-semibold text-gray-900 group-hover:text-gray-900 transition-colors flex-1">{{ milestone.label }}</h3>
+                              <div class="flex-1">
+                                <h3 class="text-base font-semibold text-gray-900 group-hover:text-gray-900 transition-colors">{{ milestone.label }}</h3>
+                                <p v-if="milestone.isActivity && milestone.description" class="text-xs text-gray-600 mt-0.5">{{ milestone.description }}</p>
+                              </div>
                               <span :class="[
                                 'text-sm font-medium px-3 py-1.5 rounded-full transition-all duration-200 ml-2 w-fit',
                                 milestone.isCurrent 
@@ -404,7 +408,7 @@
                   </div>
 
                   <div class="pt-8 border-t border-gray-200 mt-8">
-                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                    <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-100">
                       <div class="flex items-center justify-between mb-5">
                         <div>
                           <p class="text-base font-bold text-gray-900">Project Progress</p>
@@ -419,7 +423,7 @@
                       </div>
                       <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
                         <div 
-                          class="h-full bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 rounded-full transition-all duration-700 shadow-sm"
+                          class="h-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 rounded-full transition-all duration-700 shadow-sm"
                           :style="{ width: `${timelineProgress}%` }"
                         ></div>
                       </div>
@@ -594,10 +598,12 @@ import PieChart from '~/components/ui/PieChart.vue'
 import Accordion from '~/components/ui/Accordion.vue'
 import { useProjectDetail } from '~/composables/project/useProjectDetail'
 import { TAB_IDS } from '~/constants/project/detailTabs'
+import { useUserPermissions } from '~/composables/user/useUserPermissions'
 
 const route = useRoute()
 const router = useRouter()
 const projectId = route.params.id as string
+const { canManageProjects } = useUserPermissions()
 
 const {
   project,
@@ -607,6 +613,7 @@ const {
   tabs,
   auditLogs,
   activitiesLoading,
+  activities,
   projectStatus,
   projectStatusClass,
   formatDuration,

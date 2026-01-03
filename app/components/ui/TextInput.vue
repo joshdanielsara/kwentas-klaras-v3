@@ -39,7 +39,7 @@ const emit = defineEmits<TextInputEmits>()
 const { updateValue } = useTextInput(props)
 
 const inputClasses = computed(() => {
-  const base = 'block w-full py-3 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition'
+  const base = 'block w-full py-3 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition'
   const padding = hasIconSlot.value ? 'pl-10 pr-3' : 'px-3'
   return `${base} ${padding}`
 })

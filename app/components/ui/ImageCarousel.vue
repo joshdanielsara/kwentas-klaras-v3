@@ -1,5 +1,5 @@
 <template>
-  <div class="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 overflow-hidden">
+  <div class="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 overflow-hidden">
     <div class="absolute inset-0">
       <div
         v-for="(image, index) in images"

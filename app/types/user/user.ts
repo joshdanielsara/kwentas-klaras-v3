@@ -5,6 +5,7 @@ export interface User {
   lastName: string
   username: string
   email: string
+  role: string
   department: string
   status: 'Active' | 'Inactive'
   joined?: string | Date

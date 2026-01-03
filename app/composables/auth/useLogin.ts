@@ -2,6 +2,8 @@ import { useErrorHandler } from '../error/useErrorHandler'
 import { useFirebase } from '../firebase/useFirebase'
 import type { LoginForm } from '~/types/auth/login'
 import { validateLoginForm } from '~/utils/loginValidation'
+import { useAuthStore } from '~/stores/authStore'
+import type { User } from '~/types/user/user'
 
 export const useLogin = () => {
   const form = reactive<LoginForm>({
@@ -12,6 +14,7 @@ export const useLogin = () => {
   const loading = ref(false)
   const error = ref('')
   const showPassword = ref(false)
+  const authStore = useAuthStore()
 
   const handleLogin = async () => {
     error.value = ''
@@ -29,12 +32,13 @@ export const useLogin = () => {
       const user = await login(form.email, form.password)
       const idToken = await user.getIdToken()
 
-      const response = await $fetch('/api/auth/login', {
+      const response = await $fetch<{ success: boolean; user: User }>('/api/auth/login', {
         method: 'POST',
         body: { idToken }
       })
 
-      if (response.success) {
+      if (response.success && response.user) {
+        authStore.setUser(response.user)
         await navigateTo('/admin')
       }
 

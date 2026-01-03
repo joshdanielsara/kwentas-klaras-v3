@@ -16,7 +16,7 @@
         :placeholder="placeholder"
         :required="required"
         :autocomplete="autocomplete"
-        class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+        class="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue transition"
         @input="handleInput"
       />
       <button
