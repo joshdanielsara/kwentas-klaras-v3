@@ -15,13 +15,6 @@ export const TIMELINE_MILESTONE_CONFIGS: TimelineMilestoneConfig[] = [
     isLast: false,
   },
   {
-    label: 'Today',
-    getDate: (_, __, today) => today,
-    getIsPast: () => false,
-    getIsCurrent: (startDate, endDate, today) => today >= startDate && today <= endDate,
-    isLast: false,
-  },
-  {
     label: 'Project End',
     getDate: (_, endDate) => endDate,
     getIsPast: (_, endDate, today) => today > endDate,

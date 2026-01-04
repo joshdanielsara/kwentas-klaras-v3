@@ -186,11 +186,11 @@ export class ProjectService {
           }
           return change
         })
-        await this.activityService.create({
-          projectId: project.id,
-          action: 'updated',
+      await this.activityService.create({
+        projectId: project.id,
+        action: 'updated',
           description: `Project <strong>"${project.name}"</strong> was updated. ${formattedChanges.join('; ')}`,
-        });
+      });
       }
     }
 

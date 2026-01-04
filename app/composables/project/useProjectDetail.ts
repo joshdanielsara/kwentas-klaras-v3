@@ -7,6 +7,8 @@ import { useProjectTimeline } from './useProjectTimeline'
 import { PROJECT_DETAIL_TABS } from '~/constants/project/detailTabs'
 import { AUDIT_LOG_STATUS_CLASSES, AUDIT_LOG_TITLES, getAuditLogDescription } from '~/constants/project/auditLogs'
 import { useErrorHandler } from '../error/useErrorHandler'
+import * as XLSX from 'xlsx'
+import { stripHtmlTags } from '~/utils/htmlUtils'
 
 export const useProjectDetail = (projectId: string) => {
   const { loading, error, fetchProject } = useProjects()
@@ -238,6 +240,47 @@ export const useProjectDetail = (projectId: string) => {
 
   const { timelineProgress, timelineMilestones, daysRemaining } = useProjectTimeline(project, activities)
 
+  const exportLogsToExcel = () => {
+    if (auditLogs.value.length === 0) return
+
+    const workbook = XLSX.utils.book_new()
+    
+    const excelData = auditLogs.value.map((log, index) => {
+      let dateTime = log.time
+      if (activities.value.length > 0 && index < activities.value.length) {
+        const activity = activities.value[index]
+        dateTime = formatDateTime(activity.createdAt)
+      } else if (activities.value.length === 0 && project.value) {
+        const projectData = project.value as any
+        if (projectData.createdAt) {
+          dateTime = formatDateTime(projectData.createdAt)
+        }
+      }
+      return {
+        'Action': log.title,
+        'Description': stripHtmlTags(log.description),
+        'Date & Time': dateTime,
+      }
+    })
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData)
+    
+    const columnWidths = [
+      { wch: 20 },
+      { wch: 80 },
+      { wch: 25 },
+    ]
+    worksheet['!cols'] = columnWidths
+
+    const projectName = project.value?.name || 'Project'
+    const sanitizedProjectName = projectName.replace(/[<>:"/\\|?*]/g, '_')
+    const sheetName = 'Activity Log'
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName)
+
+    const fileName = `${sanitizedProjectName}_Activity_Log_${new Date().toISOString().split('T')[0]}.xlsx`
+    XLSX.writeFile(workbook, fileName)
+  }
+
   return {
     project: readonly(project),
     loading: readonly(loading),
@@ -258,6 +301,7 @@ export const useProjectDetail = (projectId: string) => {
     timelineProgress,
     timelineMilestones,
     daysRemaining,
+    exportLogsToExcel,
   }
 }
 

@@ -355,36 +355,46 @@
                 <div class="p-4 lg:p-6">
                   <div class="relative">
                     <div class="space-y-2">
-                      <div v-for="(milestone, index) in timelineMilestones" :key="index" class="relative flex items-center py-2">
-                        <div v-if="index > 0" 
-                             class="absolute left-4 w-0.5 bg-gradient-to-b from-blue-200 to-blue-300"
-                             :style="`height: 40px; top: -20px; z-index: 1;`"></div>
-                        
-                        <div class="absolute left-4 -translate-x-1/2 w-4 h-4 rounded-full border-2 border-white shadow-lg transition-all duration-300 z-10"
-                          :class="milestone.isCurrent ? 'bg-blue-500 shadow-blue-200' : milestone.isPast ? 'bg-emerald-500 shadow-emerald-200' : 'bg-gray-200'">
+                      <template v-for="(milestone, index) in timelineMilestones" :key="index">
+                        <div v-if="milestone.isNewDay" :class="index > 0 ? 'my-4 pt-2 border-t border-gray-200' : 'mb-2'">
+                          <div class="ml-8 mb-2">
+                            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ formatDate(milestone.date) }}</span>
+                          </div>
                         </div>
-                        
-                        <div class="ml-8 flex-1">
-                          <div class="bg-white backdrop-blur-sm rounded-full px-4 py-2.5 border w-full border-gray-100/50 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-200 group">
-                            <div class="flex items-center justify-between gap-3">
-                              <div class="flex-1">
-                                <h3 class="text-base font-semibold text-gray-900 group-hover:text-gray-900 transition-colors">{{ milestone.label }}</h3>
-                                <p v-if="milestone.isActivity && milestone.description" class="text-xs text-gray-600 mt-0.5" v-html="milestone.description"></p>
+                        <div class="relative flex items-center py-2">
+                          <div v-if="index > 0 && !milestone.isNewDay" 
+                               class="absolute left-4 w-0.5 bg-gradient-to-b from-blue-200 to-blue-300"
+                               :style="`height: 40px; top: -20px; z-index: 1;`"></div>
+                          <div v-else-if="index > 0 && milestone.isNewDay"
+                               class="absolute left-4 w-0.5 bg-gradient-to-b from-blue-200 to-blue-300"
+                               :style="`height: 20px; top: -10px; z-index: 1;`"></div>
+                          
+                          <div class="absolute left-4 -translate-x-1/2 w-4 h-4 rounded-full border-2 border-white shadow-lg transition-all duration-300 z-10"
+                            :class="milestone.isCurrent ? 'bg-blue-500 shadow-blue-200' : milestone.isPast ? 'bg-emerald-500 shadow-emerald-200' : 'bg-gray-200'">
+                          </div>
+                          
+                          <div class="ml-8 flex-1">
+                            <div class="bg-white backdrop-blur-sm rounded-full px-4 py-2.5 border w-full border-gray-100/50 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-200 group">
+                              <div class="flex items-center justify-between gap-3">
+                                <div class="flex-1">
+                                  <h3 class="text-base font-semibold text-gray-900 group-hover:text-gray-900 transition-colors">{{ milestone.label }}</h3>
+                                  <p v-if="milestone.isActivity && milestone.description" class="text-xs text-gray-600 mt-0.5" v-html="milestone.description"></p>
+                                </div>
+                                <span :class="[
+                                  'text-sm font-medium px-3 py-1.5 rounded-full transition-all duration-200 ml-2 w-fit',
+                                  milestone.isCurrent 
+                                    ? 'bg-blue-500 text-white border border-blue-100 group-hover:bg-blue-100' 
+                                    : milestone.isPast 
+                                      ? 'bg-emerald-500 text-white border border-emerald-100 group-hover:bg-emerald-100'
+                                      : 'bg-gray-200 text-gray-700 border border-gray-100 group-hover:bg-gray-100'
+                                ]">
+                                  {{ formatDate(milestone.date) }}
+                                </span>
                               </div>
-                              <span :class="[
-                                'text-sm font-medium px-3 py-1.5 rounded-full transition-all duration-200 ml-2 w-fit',
-                                milestone.isCurrent 
-                                  ? 'bg-blue-500 text-white border border-blue-100 group-hover:bg-blue-100' 
-                                  : milestone.isPast 
-                                    ? 'bg-emerald-500 text-white border border-emerald-100 group-hover:bg-emerald-100'
-                                    : 'bg-gray-200 text-gray-700 border border-gray-100 group-hover:bg-gray-100'
-                              ]">
-                                {{ formatDate(milestone.date) }}
-                              </span>
                             </div>
                           </div>
                         </div>
-                      </div>
+                      </template>
                     </div>
                   </div>
 
@@ -526,16 +536,28 @@
             <div v-else-if="activeTab === TAB_IDS.LOGS" class="space-y-6">
               <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
                 <div class="px-6 py-5 border-b border-gray-50">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 flex items-center justify-center">
-                      <svg class="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 class="text-xl font-bold text-gray-900">Activity Log</h3>
+                        <p class="text-xs text-gray-500">Project updates and changes</p>
+                      </div>
+                    </div>
+                    <button
+                      v-if="auditLogs.length > 0"
+                      @click="exportLogsToExcel"
+                      class="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
-                    </div>
-                    <div>
-                      <h3 class="text-xl font-bold text-gray-900">Activity Log</h3>
-                      <p class="text-xs text-gray-500">Project updates and changes</p>
-                    </div>
+                      Export to Excel
+                    </button>
                   </div>
                 </div>
                 <div class="p-6">
@@ -556,12 +578,12 @@
                     <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
                     <div class="space-y-6 pl-8">
                       <div v-for="(activity, index) in auditLogs" :key="index" class="relative">
-                        <div class="absolute -left-10 top-2 w-3 h-3 rounded-full border-2 border-white shadow-sm" :class="activity.statusClass"></div>
+                        <div class="absolute -left-10 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm" :class="activity.statusClass"></div>
                         <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                           <div class="flex items-start justify-between gap-4">
                             <div class="flex-1">
                               <p class="text-sm font-semibold text-gray-900 mb-1">{{ activity.title }}</p>
-                              <p class="text-xs text-gray-600 mb-2">{{ activity.description }}</p>
+                              <p class="text-xs text-gray-600 mb-2" v-html="activity.description"></p>
                               <p class="text-xs text-gray-400">{{ activity.time }}</p>
                             </div>
                           </div>
@@ -574,15 +596,40 @@
             </div>
 
             <div v-else-if="activeTab === TAB_IDS.DOCUMENTS" class="space-y-6">
-              <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-6">Documents</h3>
-                <div class="text-center py-12">
-                  <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+              <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-50">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 class="text-xl font-bold text-gray-900">Documents</h3>
+                        <p class="text-xs text-gray-500">Project documents and files</p>
+                      </div>
+                    </div>
+                    <button
+                      v-if="canManageProjects"
+                      class="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add Document
+                    </button>
                   </div>
-                  <p class="text-sm text-gray-500">No documents available</p>
+                </div>
+                <div class="p-6">
+                  <div class="text-center py-12">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                      <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <p class="text-sm text-gray-500">No documents available</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -629,6 +676,7 @@ const {
   timelineProgress,
   timelineMilestones,
   daysRemaining,
+  exportLogsToExcel,
 } = useProjectDetail(projectId)
 
 onMounted(async () => {

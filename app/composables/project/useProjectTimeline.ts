@@ -42,9 +42,7 @@ export const useProjectTimeline = (project: Ref<Project | null>, activities?: Re
       isActivity: false,
     }))
 
-    const filtered = milestones.filter(m => m.isCurrent || m.label !== 'Today' || (today >= startDate && today <= endDate))
-    
-    const allItems: TimelineItem[] = [...filtered]
+    const allItems: TimelineItem[] = [...milestones]
 
     if (activities?.value && activities.value.length > 0) {
       const activityItems: TimelineItem[] = activities.value.map(activity => {
@@ -101,10 +99,20 @@ export const useProjectTimeline = (project: Ref<Project | null>, activities?: Re
       return 0
     })
     
-    return sorted.map((item, index) => ({
-      ...item,
-      isLast: index === sorted.length - 1,
-    }))
+    const dateToString = (date: Date): string => {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+    }
+
+    return sorted.map((item, index) => {
+      const prevItem = index > 0 ? sorted[index - 1] : null
+      const isNewDay = !prevItem || dateToString(item.date) !== dateToString(prevItem.date)
+      
+      return {
+        ...item,
+        isLast: index === sorted.length - 1,
+        isNewDay,
+      }
+    })
   })
 
   const daysRemaining = computed(() => {

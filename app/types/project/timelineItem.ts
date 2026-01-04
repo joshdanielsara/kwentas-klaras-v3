@@ -8,5 +8,6 @@ export interface TimelineItem {
   description?: string
   action?: string
   originalDate?: Date
+  isNewDay?: boolean
 }
 
