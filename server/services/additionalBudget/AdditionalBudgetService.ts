@@ -1,28 +1,12 @@
 import { AdditionalBudgetRepository } from '../../repositories/additionalBudget/AdditionalBudgetRepository';
 import { AdditionalBudgetSerializer } from '../../serializers/AdditionalBudgetSerializer';
-import { ProjectRepository } from '../../repositories/project/ProjectRepository';
-import { prisma } from '../../lib/prisma';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
 export class AdditionalBudgetService {
   private repo: AdditionalBudgetRepository;
-  private projectRepo: ProjectRepository;
-  private client: PrismaClient;
 
   constructor(prismaClient?: PrismaClient) {
-    this.client = prismaClient || prisma;
     this.repo = new AdditionalBudgetRepository(prismaClient);
-    this.projectRepo = new ProjectRepository(prismaClient);
-  }
-
-  private async updateProjectTotalBudget(projectId: string) {
-    const budgets = await this.repo.findByProjectId(projectId);
-    const totalAddedBudget = budgets.reduce((sum, budget) => sum + budget.amount, 0);
-    
-    // Use type assertion until Prisma client is regenerated
-    await this.projectRepo.updateById(projectId, {
-      totalAddedBudget: totalAddedBudget,
-    } as any);
   }
 
   async list() {
@@ -61,9 +45,6 @@ export class AdditionalBudgetService {
       status: data.status || 'pending',
     });
 
-    // Update project's total added budget
-    await this.updateProjectTotalBudget(data.projectId);
-
     return AdditionalBudgetSerializer.detail(budget);
   }
 
@@ -100,12 +81,6 @@ export class AdditionalBudgetService {
     }
 
     const budget = await this.repo.updateById(id, updateData);
-    
-    // Update project's total added budget if amount changed
-    if (data.amount !== undefined && budget) {
-      await this.updateProjectTotalBudget(budget.projectId);
-    }
-    
     return AdditionalBudgetSerializer.detail(budget);
   }
 
@@ -115,12 +90,7 @@ export class AdditionalBudgetService {
       throw new Error('Additional budget not found');
     }
 
-    const projectId = budget.projectId;
     await this.repo.deleteById(id);
-    
-    // Update project's total added budget
-    await this.updateProjectTotalBudget(projectId);
-    
     return { success: true, message: 'Additional budget deleted successfully' };
   }
 }

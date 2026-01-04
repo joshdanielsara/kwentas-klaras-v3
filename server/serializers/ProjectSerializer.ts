@@ -1,30 +1,33 @@
 import type { Project } from '@prisma/client';
 
 export class ProjectSerializer {
-          static formatProject(project: Project) {
+          static formatProject(project: Project, totalAddedBudget?: number) {
             return {
               id: project.id,
               name: project.name,
               implementingUnit: project.implementingUnit,
-              location: project.location,
+              location: (project as any).location,
               appropriation: project.appropriation,
-              totalAddedBudget: project.totalAddedBudget ?? 0,
+              totalAddedBudget: totalAddedBudget ?? 0,
               startDate: project.startDate,
               endDate: project.endDate,
               year: project.year,
               services: project.services,
-              remarks: project.remarks,
-              code: project.code,
+              remarks: (project as any).remarks,
+              code: (project as any).code,
               createdAt: project.createdAt,
               updatedAt: project.updatedAt,
             };
           }
 
-  static list(projects: Project[]) {
-    return projects.map(project => this.formatProject(project));
+  static list(projects: Project[], budgetsMap?: Map<string, number>) {
+    return projects.map(project => {
+      const totalAddedBudget = budgetsMap?.get(project.id) ?? 0;
+      return this.formatProject(project, totalAddedBudget);
+    });
   }
 
-  static detail(project: Project | null) {
-    return project ? this.formatProject(project) : null;
+  static detail(project: Project | null, totalAddedBudget?: number) {
+    return project ? this.formatProject(project, totalAddedBudget) : null;
   }
 }

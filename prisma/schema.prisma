@@ -69,7 +69,6 @@ model Project {
   implementingUnit String?   @map("implementing_unit")
   location         String?
   appropriation    Float
-  totalAddedBudget Float     @default(0) @map("total_added_budget")
   startDate        DateTime? @map("start_date")
   endDate          DateTime? @map("end_date")
   year             Int

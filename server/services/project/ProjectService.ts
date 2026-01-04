@@ -1,28 +1,48 @@
 import { ProjectRepository } from '../../repositories/project/ProjectRepository';
 import { ProjectSerializer } from '../../serializers/ProjectSerializer';
 import { ProjectActivityService } from './ProjectActivityService';
+import { AdditionalBudgetRepository } from '../../repositories/additionalBudget/AdditionalBudgetRepository';
 import { PROJECT_FIELD_NAMES } from '../../constants/project/fieldNames';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
 export class ProjectService {
   private repo: ProjectRepository;
   private activityService: ProjectActivityService;
+  private budgetRepo: AdditionalBudgetRepository;
 
   constructor(prismaClient?: PrismaClient) {
     this.repo = new ProjectRepository(prismaClient);
     this.activityService = new ProjectActivityService();
+    this.budgetRepo = new AdditionalBudgetRepository(prismaClient);
   }
 
   async list() {
     const projects = await this.repo.findAll();
-    // totalAddedBudget is now stored in the database, so we can use it directly
-    return ProjectSerializer.list(projects);
+    
+    // Calculate total added budget for each project
+    const budgetsMap = new Map<string, number>();
+    if (projects.length > 0) {
+      const allBudgets = await this.budgetRepo.findAll();
+      allBudgets.forEach(budget => {
+        const currentTotal = budgetsMap.get(budget.projectId) ?? 0;
+        budgetsMap.set(budget.projectId, currentTotal + budget.amount);
+      });
+    }
+    
+    return ProjectSerializer.list(projects, budgetsMap);
   }
 
   async get(id: string) {
     const project = await this.repo.findById(id);
-    // totalAddedBudget is now stored in the database, so we can use it directly
-    return ProjectSerializer.detail(project);
+    if (!project) {
+      return null;
+    }
+    
+    // Calculate total added budget for this project
+    const budgets = await this.budgetRepo.findByProjectId(id);
+    const totalAddedBudget = budgets.reduce((sum, budget) => sum + budget.amount, 0);
+    
+    return ProjectSerializer.detail(project, totalAddedBudget);
   }
 
           async create(data: {
@@ -52,8 +72,8 @@ export class ProjectService {
 
             const project = await this.repo.create(projectData);
 
-    // New projects have 0 total added budget (set by default in schema)
-    const serializedProject = ProjectSerializer.detail(project);
+    // New projects have 0 total added budget
+    const serializedProject = ProjectSerializer.detail(project, 0);
     
     if (project && project.id) {
       await this.activityService.create({
@@ -126,8 +146,15 @@ export class ProjectService {
             }
 
     const project = await this.repo.updateById(id, updateData);
-    // totalAddedBudget is now stored in the database
-    const serializedProject = ProjectSerializer.detail(project);
+    
+    // Calculate total added budget for this project
+    let totalAddedBudget = 0;
+    if (project && project.id) {
+      const budgets = await this.budgetRepo.findByProjectId(project.id);
+      totalAddedBudget = budgets.reduce((sum, budget) => sum + budget.amount, 0);
+    }
+    
+    const serializedProject = ProjectSerializer.detail(project, totalAddedBudget);
     
     if (project && project.id) {
       const formatValue = (value: any, fieldName: string): string => {
@@ -149,8 +176,8 @@ export class ProjectService {
       if (data.implementingUnit !== undefined && oldProject.implementingUnit !== data.implementingUnit) {
         changes.push(`${PROJECT_FIELD_NAMES.implementingUnit}: "${formatValue(oldProject.implementingUnit, 'implementingUnit')}" → "${formatValue(data.implementingUnit, 'implementingUnit')}"`);
       }
-      if (data.location !== undefined && oldProject.location !== data.location) {
-        changes.push(`${PROJECT_FIELD_NAMES.location}: "${formatValue(oldProject.location, 'location')}" → "${formatValue(data.location, 'location')}"`);
+      if (data.location !== undefined && (oldProject as any).location !== data.location) {
+        changes.push(`${PROJECT_FIELD_NAMES.location}: "${formatValue((oldProject as any).location, 'location')}" → "${formatValue(data.location, 'location')}"`);
       }
       if (data.appropriation !== undefined && oldProject.appropriation !== data.appropriation) {
         changes.push(`${PROJECT_FIELD_NAMES.appropriation}: ${formatValue(oldProject.appropriation, 'appropriation')} → ${formatValue(data.appropriation, 'appropriation')}`);
@@ -161,11 +188,11 @@ export class ProjectService {
       if (data.services !== undefined && oldProject.services !== data.services) {
         changes.push(`${PROJECT_FIELD_NAMES.services}: "${formatValue(oldProject.services, 'services')}" → "${formatValue(data.services, 'services')}"`);
       }
-      if (data.remarks !== undefined && oldProject.remarks !== data.remarks) {
-        changes.push(`${PROJECT_FIELD_NAMES.remarks}: "${formatValue(oldProject.remarks, 'remarks')}" → "${formatValue(data.remarks, 'remarks')}"`);
+      if (data.remarks !== undefined && (oldProject as any).remarks !== data.remarks) {
+        changes.push(`${PROJECT_FIELD_NAMES.remarks}: "${formatValue((oldProject as any).remarks, 'remarks')}" → "${formatValue(data.remarks, 'remarks')}"`);
       }
-      if (data.code !== undefined && oldProject.code !== data.code) {
-        changes.push(`${PROJECT_FIELD_NAMES.code}: "${formatValue(oldProject.code, 'code')}" → "${formatValue(data.code, 'code')}"`);
+      if (data.code !== undefined && (oldProject as any).code !== data.code) {
+        changes.push(`${PROJECT_FIELD_NAMES.code}: "${formatValue((oldProject as any).code, 'code')}" → "${formatValue(data.code, 'code')}"`);
       }
       if (data.startDate !== undefined) {
         const oldDate = oldProject.startDate ? new Date(oldProject.startDate) : null;
