@@ -1,33 +1,26 @@
 import { ProjectRepository } from '../../repositories/project/ProjectRepository';
 import { ProjectSerializer } from '../../serializers/ProjectSerializer';
 import { ProjectActivityService } from './ProjectActivityService';
-import { AdditionalBudgetRepository } from '../../repositories/additionalBudget/AdditionalBudgetRepository';
+import { ComputationService } from '../computation/ComputationService';
 import { PROJECT_FIELD_NAMES } from '../../constants/project/fieldNames';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
 export class ProjectService {
   private repo: ProjectRepository;
   private activityService: ProjectActivityService;
-  private budgetRepo: AdditionalBudgetRepository;
+  private computationService: ComputationService;
 
   constructor(prismaClient?: PrismaClient) {
     this.repo = new ProjectRepository(prismaClient);
     this.activityService = new ProjectActivityService();
-    this.budgetRepo = new AdditionalBudgetRepository(prismaClient);
+    this.computationService = new ComputationService(prismaClient);
   }
 
   async list() {
     const projects = await this.repo.findAll();
     
-    // Calculate total added budget for each project
-    const budgetsMap = new Map<string, number>();
-    if (projects.length > 0) {
-      const allBudgets = await this.budgetRepo.findAll();
-      allBudgets.forEach(budget => {
-        const currentTotal = budgetsMap.get(budget.projectId) ?? 0;
-        budgetsMap.set(budget.projectId, currentTotal + budget.amount);
-      });
-    }
+    // Calculate total added budget for each project using centralized computation service
+    const budgetsMap = await this.computationService.calculateTotalAddedBudgetsMap();
     
     return ProjectSerializer.list(projects, budgetsMap);
   }
@@ -38,9 +31,8 @@ export class ProjectService {
       return null;
     }
     
-    // Calculate total added budget for this project
-    const budgets = await this.budgetRepo.findByProjectId(id);
-    const totalAddedBudget = budgets.reduce((sum, budget) => sum + budget.amount, 0);
+    // Calculate total added budget for this project using centralized computation service
+    const totalAddedBudget = await this.computationService.calculateTotalAddedBudget(id);
     
     return ProjectSerializer.detail(project, totalAddedBudget);
   }
@@ -147,12 +139,10 @@ export class ProjectService {
 
     const project = await this.repo.updateById(id, updateData);
     
-    // Calculate total added budget for this project
-    let totalAddedBudget = 0;
-    if (project && project.id) {
-      const budgets = await this.budgetRepo.findByProjectId(project.id);
-      totalAddedBudget = budgets.reduce((sum, budget) => sum + budget.amount, 0);
-    }
+    // Calculate total added budget for this project using centralized computation service
+    const totalAddedBudget = project?.id 
+      ? await this.computationService.calculateTotalAddedBudget(project.id)
+      : 0;
     
     const serializedProject = ProjectSerializer.detail(project, totalAddedBudget);
     
