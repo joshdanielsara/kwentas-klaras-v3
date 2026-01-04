@@ -319,27 +319,77 @@
 
             <div v-else-if="activeTab === TAB_IDS.OBLIGATIONS" class="space-y-6">
               <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-6">Added Obligations</h3>
-                <div id="accordion-card" data-accordion="collapse">
-                  <Accordion title="Obligation Entry #1" :is-first="true">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 class="text-lg font-semibold text-gray-900">Added Obligations</h3>
+                  <div class="text-sm text-gray-600">
+                    Total: <span class="font-semibold text-gray-900">₱{{ formatNumber(totalObligations) }}</span>
+                  </div>
+                </div>
+                
+                <div v-if="obligationsLoading" class="text-center py-12">
+                  <div class="inline-block animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
+                  <p class="mt-3 text-sm text-gray-500">Loading obligations...</p>
+                </div>
+
+                <div v-else-if="obligationsError" class="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p class="text-sm text-red-800">{{ obligationsError }}</p>
+                </div>
+
+                <div v-else-if="obligations.length === 0" class="text-center py-12">
+                  <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <p class="text-sm font-medium text-gray-900 mb-1">No obligation records</p>
+                  <p class="text-xs text-gray-500">Obligations will appear here when added</p>
+                </div>
+
+                <div v-else id="accordion-card" data-accordion="collapse" class="space-y-3">
+                  <Accordion
+                    v-for="(obligation, index) in obligations"
+                    :key="obligation.id"
+                    :title="`Obligation Entry #${index + 1}`"
+                    :is-first="index === 0"
+                  >
                     <div class="space-y-3">
                       <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span class="text-sm font-medium text-gray-500">Name:</span>
-                        <span class="text-sm text-gray-900">Sample Obligation Entry</span>
+                        <span class="text-sm font-medium text-gray-500">Amount:</span>
+                        <span class="text-sm font-semibold text-gray-900">₱{{ formatNumber(obligation.amount) }}</span>
                       </div>
                       <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span class="text-sm font-medium text-gray-500">Amount:</span>
-                        <span class="text-sm font-semibold text-gray-900">₱0.00</span>
+                        <span class="text-sm font-medium text-gray-500">Payee:</span>
+                        <span class="text-sm text-gray-900">{{ obligation.payee }}</span>
+                      </div>
+                      <div class="flex justify-between items-start py-2 border-b border-gray-100">
+                        <span class="text-sm font-medium text-gray-500">Reason:</span>
+                        <span class="text-sm text-gray-900 text-right max-w-xs">{{ obligation.reason }}</span>
+                      </div>
+                      <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span class="text-sm font-medium text-gray-500">Status:</span>
+                        <span :class="[
+                          'text-xs font-semibold px-2 py-1 rounded-full',
+                          obligation.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          obligation.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        ]">
+                          {{ obligation.status?.charAt(0).toUpperCase() + obligation.status?.slice(1) || 'Pending' }}
+                        </span>
+                      </div>
+                      <div v-if="obligation.approvedBy" class="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span class="text-sm font-medium text-gray-500">Approved By:</span>
+                        <span class="text-sm text-gray-900">{{ obligation.approvedBy }}</span>
+                      </div>
+                      <div v-if="obligation.approvedDate" class="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span class="text-sm font-medium text-gray-500">Approved Date:</span>
+                        <span class="text-sm text-gray-900">{{ formatDate(obligation.approvedDate) }}</span>
                       </div>
                       <div class="flex justify-between items-center py-2">
-                        <span class="text-sm font-medium text-gray-500">Date:</span>
-                        <span class="text-sm text-gray-900">N/A</span>
+                        <span class="text-sm font-medium text-gray-500">Date Added:</span>
+                        <span class="text-sm text-gray-900">{{ formatDate(obligation.createdAt) }}</span>
                       </div>
                     </div>
                   </Accordion>
-                  <div class="text-center py-4 text-sm text-gray-500">
-                    No additional obligation records available
-                  </div>
                 </div>
               </div>
             </div>
@@ -691,6 +741,7 @@ import PieChart from '~/components/ui/PieChart.vue'
 import Accordion from '~/components/ui/Accordion.vue'
 import { useProjectDetail } from '~/composables/project/useProjectDetail'
 import { useAdditionalBudgets } from '~/composables/additionalBudget/useAdditionalBudgets'
+import { useObligations } from '~/composables/obligation/useObligations'
 import { TAB_IDS } from '~/constants/project/detailTabs'
 import { useUserPermissions } from '~/composables/user/useUserPermissions'
 
@@ -745,9 +796,33 @@ const loadBudgets = async () => {
   }
 }
 
+const { fetchObligationsByProject } = useObligations()
+const obligations = ref<any[]>([])
+const obligationsLoading = ref(false)
+const obligationsError = ref<string | null>(null)
+
+const loadObligations = async () => {
+  if (!projectId) return
+  obligationsLoading.value = true
+  obligationsError.value = null
+  try {
+    const obligationsList = await fetchObligationsByProject(projectId)
+    obligations.value = obligationsList
+  } catch (err: any) {
+    obligationsError.value = err?.message || 'Failed to load obligations'
+  } finally {
+    obligationsLoading.value = false
+  }
+}
+
+const totalObligations = computed(() => {
+  return obligations.value.reduce((sum, obligation) => sum + (obligation.amount || 0), 0)
+})
+
 watch(() => project.value?.id, async (newId) => {
   if (newId) {
     await loadBudgets()
+    await loadObligations()
   }
 })
 
@@ -755,12 +830,16 @@ watch(() => activeTab.value, (newTab) => {
   if (newTab === TAB_IDS.BUDGET && project.value?.id) {
     loadBudgets()
   }
+  if (newTab === TAB_IDS.OBLIGATIONS && project.value?.id) {
+    loadObligations()
+  }
 })
 
 onMounted(async () => {
   await loadProject()
   if (project.value?.id) {
     await loadBudgets()
+    await loadObligations()
   }
 })
 </script>
