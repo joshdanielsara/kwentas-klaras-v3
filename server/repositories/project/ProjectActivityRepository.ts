@@ -30,7 +30,7 @@ export class ProjectActivityRepository implements IProjectActivityRepository {
   async findByProjectId(projectId: string): Promise<ProjectActivity[]> {
     return this.client.projectActivity.findMany({
       where: { projectId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'asc' },
     })
   }
 }

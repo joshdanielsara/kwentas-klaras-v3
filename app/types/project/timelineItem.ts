@@ -6,5 +6,7 @@ export interface TimelineItem {
   isLast: boolean
   isActivity?: boolean
   description?: string
+  action?: string
+  originalDate?: Date
 }
 

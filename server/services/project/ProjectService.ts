@@ -54,7 +54,7 @@ export class ProjectService {
       await this.activityService.create({
         projectId: project.id,
         action: 'created',
-        description: `Project "${data.name}" was created`,
+        description: `Project <strong>"${data.name}"</strong> was created`,
       });
     }
 
@@ -73,6 +73,11 @@ export class ProjectService {
             startDate?: Date;
             endDate?: Date;
           }) {
+            const oldProject = await this.repo.findById(id);
+            if (!oldProject) {
+              throw new Error('Project not found');
+            }
+
             const updateData: Prisma.ProjectUpdateInput = {};
 
             if (data.name !== undefined) {
@@ -119,23 +124,72 @@ export class ProjectService {
     const serializedProject = ProjectSerializer.detail(project);
     
     if (project && project.id) {
-      const changes: string[] = []
-      if (data.name !== undefined) changes.push(PROJECT_FIELD_NAMES.name)
-      if (data.implementingUnit !== undefined) changes.push(PROJECT_FIELD_NAMES.implementingUnit)
-      if (data.location !== undefined) changes.push(PROJECT_FIELD_NAMES.location)
-      if (data.appropriation !== undefined) changes.push(PROJECT_FIELD_NAMES.appropriation)
-      if (data.year !== undefined) changes.push(PROJECT_FIELD_NAMES.year)
-      if (data.services !== undefined) changes.push(PROJECT_FIELD_NAMES.services)
-      if (data.remarks !== undefined) changes.push(PROJECT_FIELD_NAMES.remarks)
-      if (data.code !== undefined) changes.push(PROJECT_FIELD_NAMES.code)
-      if (data.startDate !== undefined) changes.push(PROJECT_FIELD_NAMES.startDate)
-      if (data.endDate !== undefined) changes.push(PROJECT_FIELD_NAMES.endDate)
+      const formatValue = (value: any, fieldName: string): string => {
+        if (value === null || value === undefined) return 'N/A';
+        if (fieldName === 'startDate' || fieldName === 'endDate') {
+          return new Date(value).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+        }
+        if (fieldName === 'appropriation') {
+          return `₱${Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+        return String(value);
+      };
+
+      const changes: string[] = [];
+      
+      if (data.name !== undefined && oldProject.name !== data.name.trim()) {
+        changes.push(`${PROJECT_FIELD_NAMES.name}: "${formatValue(oldProject.name, 'name')}" → "${formatValue(data.name.trim(), 'name')}"`);
+      }
+      if (data.implementingUnit !== undefined && oldProject.implementingUnit !== data.implementingUnit) {
+        changes.push(`${PROJECT_FIELD_NAMES.implementingUnit}: "${formatValue(oldProject.implementingUnit, 'implementingUnit')}" → "${formatValue(data.implementingUnit, 'implementingUnit')}"`);
+      }
+      if (data.location !== undefined && oldProject.location !== data.location) {
+        changes.push(`${PROJECT_FIELD_NAMES.location}: "${formatValue(oldProject.location, 'location')}" → "${formatValue(data.location, 'location')}"`);
+      }
+      if (data.appropriation !== undefined && oldProject.appropriation !== data.appropriation) {
+        changes.push(`${PROJECT_FIELD_NAMES.appropriation}: ${formatValue(oldProject.appropriation, 'appropriation')} → ${formatValue(data.appropriation, 'appropriation')}`);
+      }
+      if (data.year !== undefined && oldProject.year !== data.year) {
+        changes.push(`${PROJECT_FIELD_NAMES.year}: ${formatValue(oldProject.year, 'year')} → ${formatValue(data.year, 'year')}`);
+      }
+      if (data.services !== undefined && oldProject.services !== data.services) {
+        changes.push(`${PROJECT_FIELD_NAMES.services}: "${formatValue(oldProject.services, 'services')}" → "${formatValue(data.services, 'services')}"`);
+      }
+      if (data.remarks !== undefined && oldProject.remarks !== data.remarks) {
+        changes.push(`${PROJECT_FIELD_NAMES.remarks}: "${formatValue(oldProject.remarks, 'remarks')}" → "${formatValue(data.remarks, 'remarks')}"`);
+      }
+      if (data.code !== undefined && oldProject.code !== data.code) {
+        changes.push(`${PROJECT_FIELD_NAMES.code}: "${formatValue(oldProject.code, 'code')}" → "${formatValue(data.code, 'code')}"`);
+      }
+      if (data.startDate !== undefined) {
+        const oldDate = oldProject.startDate ? new Date(oldProject.startDate) : null;
+        const newDate = new Date(data.startDate);
+        if (!oldDate || oldDate.getTime() !== newDate.getTime()) {
+          changes.push(`${PROJECT_FIELD_NAMES.startDate}: ${formatValue(oldProject.startDate, 'startDate')} → ${formatValue(data.startDate, 'startDate')}`);
+        }
+      }
+      if (data.endDate !== undefined) {
+        const oldDate = oldProject.endDate ? new Date(oldProject.endDate) : null;
+        const newDate = new Date(data.endDate);
+        if (!oldDate || oldDate.getTime() !== newDate.getTime()) {
+          changes.push(`${PROJECT_FIELD_NAMES.endDate}: ${formatValue(oldProject.endDate, 'endDate')} → ${formatValue(data.endDate, 'endDate')}`);
+        }
+      }
       
       if (changes.length > 0) {
+        const formattedChanges = changes.map(change => {
+          const parts = change.split(' → ')
+          if (parts.length === 2) {
+            const fieldPart = parts[0]
+            const newValue = parts[1]
+            return `${fieldPart} → <strong>${newValue}</strong>`
+          }
+          return change
+        })
         await this.activityService.create({
           projectId: project.id,
           action: 'updated',
-          description: `Project "${project.name}" was updated. Changed fields: ${changes.join(', ')}`,
+          description: `Project <strong>"${project.name}"</strong> was updated. ${formattedChanges.join('; ')}`,
         });
       }
     }

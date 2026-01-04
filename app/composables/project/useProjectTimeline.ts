@@ -50,8 +50,16 @@ export const useProjectTimeline = (project: Ref<Project | null>, activities?: Re
       const activityItems: TimelineItem[] = activities.value.map(activity => {
         const activityDate = new Date(activity.createdAt)
         activityDate.setHours(0, 0, 0, 0)
-        const isPast = activityDate < today
-        const isCurrent = activityDate.getTime() === today.getTime()
+        
+        let displayDate = activityDate
+        if (activityDate < startDate) {
+          displayDate = new Date(startDate)
+        } else if (activityDate > endDate) {
+          displayDate = new Date(endDate)
+        }
+        
+        const isPast = displayDate < today
+        const isCurrent = displayDate.getTime() === today.getTime()
 
         let label = activity.action || 'Activity'
         if (activity.action) {
@@ -60,19 +68,38 @@ export const useProjectTimeline = (project: Ref<Project | null>, activities?: Re
 
         return {
           label,
-          date: activityDate,
+          date: displayDate,
           isPast,
           isCurrent,
           isLast: false,
           isActivity: true,
           description: activity.description,
+          action: activity.action,
+          originalDate: activityDate,
         }
       })
 
       allItems.push(...activityItems)
     }
 
-    const sorted = allItems.sort((a, b) => a.date.getTime() - b.date.getTime())
+    const sorted = allItems.sort((a, b) => {
+      const dateDiff = a.date.getTime() - b.date.getTime()
+      if (dateDiff !== 0) return dateDiff
+      
+      if (a.isActivity && b.isActivity && a.originalDate && b.originalDate) {
+        const originalDateDiff = a.originalDate.getTime() - b.originalDate.getTime()
+        if (originalDateDiff !== 0) return originalDateDiff
+      }
+      
+      if (a.isActivity && b.isActivity) {
+        const actionOrder: Record<string, number> = { 'created': 0, 'updated': 1 }
+        const aAction = a.action || ''
+        const bAction = b.action || ''
+        return (actionOrder[aAction] ?? 99) - (actionOrder[bAction] ?? 99)
+      }
+      
+      return 0
+    })
     
     return sorted.map((item, index) => ({
       ...item,
