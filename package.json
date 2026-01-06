@@ -28,12 +28,14 @@
     "@nuxt/ui": "^4.2.1",
     "@prisma/client": "^6.19.0",
     "@unhead/vue": "^2.0.19",
+    "@vue-leaflet/vue-leaflet": "^0.10.1",
     "@vuepic/vue-datepicker": "^12.1.0",
     "apexcharts": "^5.3.6",
     "better-sqlite3": "^12.5.0",
     "eslint": "^9.39.1",
     "firebase": "^12.6.0",
     "firebase-admin": "^13.6.0",
+    "leaflet": "^1.9.4",
     "mongodb": "^7.0.0",
     "nuxt": "^4.2.1",
     "prisma": "^6.19.0",
@@ -45,6 +47,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^24.10.4",
     "dotenv": "^17.2.3",
     "tsx": "^4.19.2"

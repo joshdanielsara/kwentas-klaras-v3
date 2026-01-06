@@ -121,6 +121,20 @@
                 </div>
               </div>
 
+              <div v-if="form.location" class="space-y-6">
+                <h2 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                  Project Location
+                </h2>
+                <GeotagMap
+                  :location-name="form.location"
+                  :initial-latitude="form.latitude"
+                  :initial-longitude="form.longitude"
+                  :has-save-button="false"
+                  :show-clear-button="false"
+                  @update:coordinates="handleCoordinatesUpdate"
+                />
+              </div>
+
               <div class="space-y-6">
                 <h2 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
                   Project Details
@@ -227,6 +241,7 @@ import SelectInput from '~/components/ui/SelectInput.vue'
 import CurrencyInput from '~/components/ui/CurrencyInput.vue'
 import YearPicker from '~/components/ui/YearPicker.vue'
 import ConfirmModal from '~/components/ui/ConfirmModal.vue'
+import GeotagMap from '~/components/shared/GeotagMap.vue'
 import { MODAL_MESSAGES } from '~/constants/ui/modalMessages'
 import { useConfirmModal } from '~/composables/ui/useConfirmModal'
 import { useProjectForm } from '~/composables/project/useProjectForm'
@@ -252,6 +267,11 @@ const handleCreateClick = () => {
   if (isFormValid.value) {
     showConfirmationModal.value = true
   }
+}
+
+const handleCoordinatesUpdate = (latitude: number | null, longitude: number | null) => {
+  form.latitude = latitude
+  form.longitude = longitude
 }
 
 const onConfirmCreate = async () => {

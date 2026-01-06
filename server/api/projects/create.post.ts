@@ -25,6 +25,8 @@ export default defineEventHandler(async (event) => {
                 code: body.code,
                 startDate: body.startDate,
                 endDate: body.endDate,
+                latitude: body.latitude !== undefined ? body.latitude : undefined,
+                longitude: body.longitude !== undefined ? body.longitude : undefined,
     })
 
     return {

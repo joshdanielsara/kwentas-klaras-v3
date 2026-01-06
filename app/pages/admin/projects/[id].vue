@@ -791,6 +791,15 @@
                 </div>
               </div>
             </div>
+
+            <div v-else-if="activeTab === TAB_IDS.MAP" class="space-y-6">
+              <GeotagMap
+                :project-id="projectId"
+                :initial-latitude="(project as any)?.latitude"
+                :initial-longitude="(project as any)?.longitude"
+                @saved="handleMapSaved"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -809,6 +818,7 @@
 import PieChart from '~/components/ui/PieChart.vue'
 import Accordion from '~/components/ui/Accordion.vue'
 import AddDisbursement from '~/components/projects/AddDisbursement.vue'
+import GeotagMap from '~/components/shared/GeotagMap.vue'
 import { useProjectDetail } from '~/composables/project/useProjectDetail'
 import { useProjectFinancials } from '~/composables/project/useProjectFinancials'
 import { useAdditionalBudgets } from '~/composables/additionalBudget/useAdditionalBudgets'
@@ -1065,6 +1075,10 @@ const handleSaveDisbursement = async (disbursementData: {
 
 const closeDisbursementModal = () => {
   isDisbursementModalOpen.value = false
+}
+
+const handleMapSaved = async () => {
+  await loadProject()
 }
 
 watch(() => project.value?.id, async (newId) => {

@@ -7,6 +7,7 @@ export const PROJECT_DETAIL_TABS = [
   { id: 'disbursements', label: 'Disbursements' },
   { id: 'logs', label: 'Logs' },
   { id: 'documents', label: 'Documents' },
+  { id: 'map', label: 'Project Map' },
 ] as const
 
 export type ProjectDetailTabId = typeof PROJECT_DETAIL_TABS[number]['id']
@@ -20,5 +21,6 @@ export const TAB_IDS = {
   DISBURSEMENTS: 'disbursements',
   LOGS: 'logs',
   DOCUMENTS: 'documents',
+  MAP: 'map',
 } as const
 

@@ -15,6 +15,8 @@ export class ProjectSerializer {
               services: project.services,
               remarks: (project as any).remarks,
               code: (project as any).code,
+              latitude: (project as any).latitude ?? null,
+              longitude: (project as any).longitude ?? null,
               createdAt: project.createdAt,
               updatedAt: project.updatedAt,
             };

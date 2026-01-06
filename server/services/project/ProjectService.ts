@@ -48,6 +48,8 @@ export class ProjectService {
             code?: string;
             startDate: Date;
             endDate: Date;
+            latitude?: number;
+            longitude?: number;
           }) {
             const projectData: Prisma.ProjectCreateInput = {
               name: data.name.trim(),
@@ -60,6 +62,8 @@ export class ProjectService {
               ...(data.location && { location: data.location }),
               ...(data.remarks && { remarks: data.remarks }),
               ...(data.code && { code: data.code }),
+              ...(data.latitude !== undefined && { latitude: data.latitude }),
+              ...(data.longitude !== undefined && { longitude: data.longitude }),
             } as Prisma.ProjectCreateInput;
 
             const project = await this.repo.create(projectData);
@@ -89,6 +93,8 @@ export class ProjectService {
             code?: string;
             startDate?: Date;
             endDate?: Date;
+            latitude?: number;
+            longitude?: number;
           }) {
             const oldProject = await this.repo.findById(id);
             if (!oldProject) {
@@ -135,6 +141,14 @@ export class ProjectService {
 
             if (data.endDate !== undefined) {
               updateData.endDate = new Date(data.endDate);
+            }
+
+            if (data.latitude !== undefined) {
+              (updateData as any).latitude = data.latitude !== null ? data.latitude : null;
+            }
+
+            if (data.longitude !== undefined) {
+              (updateData as any).longitude = data.longitude !== null ? data.longitude : null;
             }
 
     const project = await this.repo.updateById(id, updateData);

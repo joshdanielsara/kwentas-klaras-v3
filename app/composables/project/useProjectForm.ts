@@ -21,6 +21,8 @@ export const useProjectForm = () => {
     services: '',
     remarks: '',
     code: '',
+    latitude: null as number | null,
+    longitude: null as number | null,
   })
 
   const loading = ref(false)
@@ -50,6 +52,8 @@ export const useProjectForm = () => {
         code: form.code,
         startDate: new Date(form.startDate),
         endDate: new Date(form.endDate),
+        latitude: form.latitude,
+        longitude: form.longitude,
       }
 
       await createProject(projectData)

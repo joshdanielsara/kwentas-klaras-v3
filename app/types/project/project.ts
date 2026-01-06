@@ -11,5 +11,7 @@ export interface Project {
   services: string
   remarks?: string
   code?: string
+  latitude?: number | null
+  longitude?: number | null
 }
 
