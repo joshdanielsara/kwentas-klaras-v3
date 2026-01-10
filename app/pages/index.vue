@@ -148,32 +148,52 @@
             </div>
           </div>
         </div>
-        <div v-if="loading" class="text-center w-full py-12 flex-1 flex items-center justify-center">
-          <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
-          <p class="mt-4 text-gray-600">Loading projects...</p>
-        </div>
-
-        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 mx-auto max-w-2xl">
-          <p class="text-red-800">{{ error }}</p>
-        </div>
-
-        <div v-else-if="filteredProjects.length === 0" class="text-center w-full py-12 flex-1 flex items-center justify-center">
-          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+        <Transition
+          enter-active-class="transition-all duration-500 ease-out"
+          enter-from-class="opacity-0 scale-95 translate-y-4"
+          enter-to-class="opacity-100 scale-100 translate-y-0"
+          leave-active-class="transition-all duration-300 ease-in"
+          leave-from-class="opacity-100 scale-100 translate-y-0"
+          leave-to-class="opacity-0 scale-95 -translate-y-4"
+          mode="out-in"
+        >
+          <div v-if="showLoading || !showContent" key="loader" class="w-full flex-1 flex items-center justify-center">
+            <div class="text-center space-y-4 max-w-md w-full px-6">
+              <div class="space-y-3">
+                <h3 class="text-2xl font-bold text-gray-900">Updating Data</h3>
+                <p class="text-sm text-gray-600">Please wait while we fetch the latest project information...</p>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                <div 
+                  class="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 h-2.5 rounded-full transition-all duration-300 ease-out" 
+                  :style="{ width: `${progressPercentage}%`, backgroundSize: '200% 100%' }"
+                ></div>
+              </div>
+              <p class="text-xs text-gray-500 mt-2">{{ progressPercentage }}%</p>
+            </div>
           </div>
-          <p class="text-lg font-medium text-gray-900 mb-1">No projects found</p>
-          <p class="text-sm text-gray-500">Projects will appear here when added</p>
-        </div>
 
-        <div v-else class="w-full flex-1 flex items-center relative overflow-hidden">
-          <Transition name="fade" mode="out-in">
-          <div
-              v-if="currentProject"
-              :key="currentIndex"
-              class="carousel-item w-full h-full flex items-center"
-          >
+          <div v-else-if="error" key="error" class="bg-red-50 border border-red-200 rounded-lg p-4 mx-auto max-w-2xl">
+            <p class="text-red-800">{{ error }}</p>
+          </div>
+
+          <div v-else-if="filteredProjects.length === 0" key="empty" class="text-center w-full py-12 flex-1 flex items-center justify-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+              <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <p class="text-lg font-medium text-gray-900 mb-1">No projects found</p>
+            <p class="text-sm text-gray-500">Projects will appear here when added</p>
+          </div>
+
+          <div v-else key="content" class="w-full flex-1 flex items-center relative overflow-hidden">
+            <Transition name="fade" mode="out-in">
+              <div
+                v-if="currentProject"
+                :key="currentIndex"
+                class="carousel-item w-full h-full flex items-center"
+              >
             <div class="lg:flex lg:items-start lg:gap-12 w-full">
               <div class="w-full space-y-8 lg:w-1/2">
                 <div>
@@ -300,8 +320,9 @@
                 </div>
               </div>
             </div>
-          </Transition>
-        </div>
+            </Transition>
+          </div>
+        </Transition>
       </section>
     </div>
   </div>
@@ -314,6 +335,7 @@ import { useProjectFormatting } from '~/composables/project/useProjectFormatting
 import { useProjectListing } from '~/composables/project/useProjectListing'
 import { useProjectCarousel } from '~/composables/project/useProjectCarousel'
 import { useProjectFilters } from '~/composables/project/useProjectFilters'
+import { useLoadingState } from '~/composables/ui/useLoadingState'
 import type { ProjectFilters } from '~/types/project/projectFilters'
 import '~/assets/css/projectCarousel.css'
 
@@ -329,6 +351,10 @@ const { filters, filteredProjects, uniqueDepartments, uniqueYears, uniqueLocatio
 
 const { currentIndex, currentProject, countdown, remainingProjects, startAutoPlay, stopAutoPlay } = useProjectCarousel(filteredProjects)
 
+const { showLoading, markAsLoaded } = useLoadingState(loading)
+const showContent = ref(false)
+const progressPercentage = ref(0)
+
 watch(filteredProjects, (newProjects) => {
   if (newProjects.length > 1) {
     startAutoPlay()
@@ -337,8 +363,47 @@ watch(filteredProjects, (newProjects) => {
   }
 })
 
+const animateProgressBar = (duration: number) => {
+  progressPercentage.value = 0
+  const startTime = Date.now()
+  const interval = 16
+  
+  const updateProgress = () => {
+    const elapsed = Date.now() - startTime
+    const progress = Math.min((elapsed / duration) * 100, 100)
+    progressPercentage.value = Math.round(progress)
+    
+    if (progress < 100) {
+      setTimeout(updateProgress, interval)
+    } else {
+      progressPercentage.value = 100
+    }
+  }
+  
+  updateProgress()
+}
+
 onMounted(async () => {
+  const startTime = Date.now()
+  
+  const minDelay = 3000
+  const maxDelay = 5000
+  const randomDelay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay
+  
+  animateProgressBar(randomDelay)
+  
   await fetchProjects()
+  
+  const elapsedTime = Date.now() - startTime
+  const remainingDelay = Math.max(0, randomDelay - elapsedTime)
+  
+  if (remainingDelay > 0) {
+    await new Promise(resolve => setTimeout(resolve, remainingDelay))
+  }
+  
+  progressPercentage.value = 100
+  showContent.value = true
+  markAsLoaded()
   if (filteredProjects.value.length > 1) {
     startAutoPlay()
   }
