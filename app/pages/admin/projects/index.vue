@@ -7,41 +7,49 @@
         <div class="space-y-6 min-h-full flex flex-col">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">All Projects</h1>
-              <p class="text-sm text-gray-500">Manage and track all projects</p>
+              <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{{ pageTitle }}</h1>
+              <p class="text-sm text-gray-500">{{ pageDescription }}</p>
             </div>
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
               <div class="flex items-center gap-2 bg-gray-100 p-1 rounded-lg overflow-x-auto">
                 <button
-                  @click="filterType = PROJECT_FILTER_TYPES.ALL"
+                  @click="handleFilterChange(PROJECT_FILTER_TYPES.ALL)"
+                  :disabled="filteringLoading"
                   :class="[
                     'px-4 py-2 text-sm font-medium rounded-md transition-colors',
                     filterType === PROJECT_FILTER_TYPES.ALL
                       ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      : 'text-gray-600 hover:text-gray-900',
+                    filteringLoading ? 'opacity-50 cursor-not-allowed' : ''
                   ]"
                 >
                   All
                 </button>
                 <button
-                  @click="filterType = PROJECT_FILTER_TYPES.CURRENT"
+                  @click="handleFilterChange(PROJECT_FILTER_TYPES.CURRENT)"
+                  :disabled="filteringLoading"
                   :class="[
                     'px-4 py-2 text-sm font-medium rounded-md transition-colors',
                     filterType === PROJECT_FILTER_TYPES.CURRENT
                       ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      : 'text-gray-600 hover:text-gray-900',
+                    filteringLoading ? 'opacity-50 cursor-not-allowed' : ''
                   ]"
+                  :title="'Projects from ' + new Date().getFullYear() + ' or later'"
                 >
                   Current Projects
               </button>
                 <button
-                  @click="filterType = PROJECT_FILTER_TYPES.CONTINUING"
+                  @click="handleFilterChange(PROJECT_FILTER_TYPES.CONTINUING)"
+                  :disabled="filteringLoading"
                   :class="[
                     'px-4 py-2 text-sm font-medium rounded-md transition-colors',
                     filterType === PROJECT_FILTER_TYPES.CONTINUING
                       ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      : 'text-gray-600 hover:text-gray-900',
+                    filteringLoading ? 'opacity-50 cursor-not-allowed' : ''
                   ]"
+                  :title="'Projects from before ' + new Date().getFullYear()"
                 >
                   Continuing Projects
               </button>
@@ -101,9 +109,9 @@
 
           <section class="relative overflow-hidden rounded-2xl border border-gray-300 p-6 bg-white flex-1 min-h-[600px] flex flex-col">
 
-            <ProjectsListSkeleton v-if="showLoading" />
+            <ProjectsListSkeleton v-if="showLoading || filteringLoading" />
 
-            <div v-else-if="filteredProjects.length === 0" class="text-center py-12 flex-1 flex items-center justify-center">
+            <div v-else-if="!filteringLoading && filteredProjects.length === 0" class="text-center py-12 flex-1 flex items-center justify-center">
               <div class="text-gray-400 mb-2">
                 <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -113,7 +121,7 @@
               <p class="text-sm text-gray-500 mt-1">Try adjusting your search criteria.</p>
             </div>
 
-            <TransitionGroup v-else name="list" tag="div" class="space-y-3 flex-1">
+            <TransitionGroup v-else-if="!filteringLoading" name="list" tag="div" class="space-y-3 flex-1">
               <div
                 v-for="(project, index) in filteredProjects"
                 :key="project.id"
@@ -222,7 +230,7 @@
               </div>
             </TransitionGroup>
 
-            <div v-if="!loading && filteredProjects.length > 0" class="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
+            <div v-if="!loading && !filteringLoading && filteredProjects.length > 0" class="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
               <div class="text-sm text-gray-600">
                 Showing <span class="font-bold text-gray-900">{{ filteredProjects.length }}</span> of <span class="font-bold text-gray-900">{{ projects.length }}</span> projects
               </div>
@@ -256,6 +264,7 @@ import { usePageAnimations } from '~/composables/ui/usePageAnimations'
 
 const searchQuery = ref('')
 const filterType = ref<ProjectFilterType>(PROJECT_FILTER_TYPES.ALL)
+const filteringLoading = ref(false)
 
 const { projects, loading, saveError, fetchProjects, projectStats } = useProjects()
 const { canManageProjects } = useUserPermissions()
@@ -265,6 +274,38 @@ const animations = usePageAnimations()
 const displayStats = computed(() => projectStats.value.slice(0, 3))
 const { filteredProjects: searchFilteredProjects } = useProjectSearch(projects, searchQuery)
 const { formatNumber, formatDate } = useProjectFormatting()
+
+const pageTitle = computed(() => {
+  if (filterType.value === PROJECT_FILTER_TYPES.CURRENT) {
+    return 'Current Projects'
+  }
+  if (filterType.value === PROJECT_FILTER_TYPES.CONTINUING) {
+    return 'Continuing Projects'
+  }
+  return 'All Projects'
+})
+
+const pageDescription = computed(() => {
+  const currentYear = new Date().getFullYear()
+  if (filterType.value === PROJECT_FILTER_TYPES.CURRENT) {
+    return `Projects from ${currentYear} or later`
+  }
+  if (filterType.value === PROJECT_FILTER_TYPES.CONTINUING) {
+    return `Projects from before ${currentYear}`
+  }
+  return 'Manage and track all projects'
+})
+
+const handleFilterChange = (newFilterType: ProjectFilterType) => {
+  if (filterType.value === newFilterType || filteringLoading.value) return
+
+  filteringLoading.value = true
+  filterType.value = newFilterType
+
+  setTimeout(() => {
+    filteringLoading.value = false
+  }, 300)
+}
 
 const {
   projectFinancialData,
@@ -293,23 +334,17 @@ const filteredProjects = computed(() => {
     return searchFilteredProjects.value
   }
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const currentYear = new Date().getFullYear()
 
   return searchFilteredProjects.value.filter((project) => {
-    if (!project.startDate || !project.endDate) return false
-
-    const startDate = new Date(project.startDate)
-    const endDate = new Date(project.endDate)
-    startDate.setHours(0, 0, 0, 0)
-    endDate.setHours(0, 0, 0, 0)
+    if (!project.year) return false
 
     if (filterType.value === PROJECT_FILTER_TYPES.CURRENT) {
-      return startDate <= today && endDate >= today
+      return project.year >= currentYear
     }
 
     if (filterType.value === PROJECT_FILTER_TYPES.CONTINUING) {
-      return endDate > today
+      return project.year < currentYear
     }
 
     return true
