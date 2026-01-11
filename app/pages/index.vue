@@ -1,12 +1,12 @@
 <template>
   <div class="w-full h-screen bg-white overflow-x-hidden">
     <div class="container px-6 mx-auto h-full">
-      <div class="fixed top-4 right-4 mr-26 z-50">
-        <div class="flex items-center gap-3">
-          <span class="text-sm text-gray-600">Have an account?</span>
+      <div class="fixed top-4 right-4 z-50">
+        <div class="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-3">
+          <span class="text-xs sm:text-sm text-gray-600 whitespace-nowrap">Have an account?</span>
           <button
             @click="navigateTo('/auth/login')"
-            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+            class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors whitespace-nowrap"
           >
             Login to Kwentas Klaras
           </button>
@@ -14,25 +14,25 @@
       </div>
       <section class="bg-white h-[calc(100vh-5rem)] mt-20 flex flex-col">
         <div class="mb-8 pt-8 pb-8 border-b border-gray-300">
-          <div class="flex items-center justify-between mb-6">
+          <div class="flex flex-col mb-6">
             <div>
-              <h1 class="text-4xl font-bold text-gray-900 mb-2">Kwentas Klaras Digital PMIS</h1>
-              <p class="text-lg text-gray-600">Welcome to the Project Management Information System</p>
+              <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Kwentas Klaras Digital PMIS</h1>
+              <p class="text-base sm:text-lg text-gray-600">Welcome to the Project Management Information System</p>
             </div>
-            <div v-if="!loading && !error && filteredProjects.length > 0" class="flex items-center gap-6">
+            <div v-if="!loading && !error && filteredProjects.length > 0" class="flex items-center gap-6 mt-4">
               <div>
                 <div class="text-sm text-gray-600">Next in</div>
-                <div class="text-2xl font-bold text-gray-900">{{ Math.ceil(countdown) }}s</div>
+                <div class="text-xl sm:text-2xl font-bold text-gray-900">{{ Math.ceil(countdown) }}s</div>
               </div>
               <div>
                 <div class="text-sm text-gray-600">Remaining</div>
-                <div class="text-2xl font-bold text-gray-900">{{ remainingProjects }}</div>
+                <div class="text-xl sm:text-2xl font-bold text-gray-900">{{ remainingProjects }}</div>
               </div>
             </div>
           </div>
           <div v-if="!loading && !error && projects.length > 0" class="space-y-3">
-            <div class="flex items-center gap-3 flex-wrap">
-              <div class="relative">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-wrap">
+              <div class="relative flex-1 sm:flex-initial min-w-[150px]">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -40,13 +40,13 @@
                 </div>
                 <select
                   v-model="filters.department"
-                  class="pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer appearance-none"
+                  class="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer appearance-none"
                 >
                   <option value="">All Departments</option>
                   <option v-for="dept in uniqueDepartments" :key="dept" :value="dept">{{ dept }}</option>
                 </select>
               </div>
-              <div class="relative">
+              <div class="relative flex-1 sm:flex-initial min-w-[150px]">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -54,13 +54,13 @@
                 </div>
                 <select
                   v-model="filters.year"
-                  class="pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer appearance-none"
+                  class="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer appearance-none"
                 >
                   <option value="">All Years</option>
                   <option v-for="year in uniqueYears" :key="year" :value="year">{{ year }}</option>
                 </select>
               </div>
-              <div class="relative">
+              <div class="relative flex-1 sm:flex-initial min-w-[150px]">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -68,13 +68,13 @@
                 </div>
                 <select
                   v-model="filters.location"
-                  class="pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer appearance-none"
+                  class="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer appearance-none"
                 >
                   <option value="">All Locations</option>
                   <option v-for="loc in uniqueLocations" :key="loc" :value="loc">{{ loc }}</option>
                 </select>
               </div>
-              <div class="relative">
+              <div class="relative flex-1 sm:flex-initial min-w-[150px]">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -82,7 +82,7 @@
                 </div>
                 <select
                   v-model="filters.services"
-                  class="pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer appearance-none"
+                  class="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer appearance-none"
                 >
                   <option value="">All Services</option>
                   <option v-for="service in uniqueServices" :key="service" :value="service">{{ service }}</option>
@@ -91,7 +91,7 @@
               <button
                 v-if="hasActiveFilters"
                 @click="resetFilters"
-                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center gap-2"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center justify-center gap-2 w-full sm:w-auto whitespace-nowrap"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
