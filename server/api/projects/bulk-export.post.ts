@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs'
-import { join } from 'path'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import ExcelJS from 'exceljs'
 import { ProjectService } from '../../services/project/ProjectService'
 import { ComputationService } from '../../services/computation/ComputationService'
@@ -7,6 +8,21 @@ import { withErrorHandler } from '../../utils/errorHandler'
 import { categorizeService, getServiceStartRow } from '../../utils/excelServiceCategory'
 import type { ProjectExportData } from '../../types/excel/projectExport'
 import { EXCEL_SERVICE_CATEGORIES, EXCEL_SERVICE_CATEGORY_LIST } from '../../constants/excel/serviceCategories'
+
+function getTemplatePath(): string {
+  const currentFile = fileURLToPath(import.meta.url)
+  const currentDir = dirname(currentFile)
+  
+  const templatePath = join(currentDir, '..', '..', 'templates', 'template_report.xlsx')
+  
+  try {
+    readFileSync(templatePath)
+    return templatePath
+  } catch {
+    const fallbackPath = join(process.cwd(), 'server', 'templates', 'template_report.xlsx')
+    return fallbackPath
+  }
+}
 
 export default defineEventHandler(async (event) => {
   return await withErrorHandler(async () => {
@@ -20,7 +36,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const templatePath = join(process.cwd(), 'server', 'templates', 'template_report.xlsx')
+    const templatePath = getTemplatePath()
     const templateFile = readFileSync(templatePath)
 
     const workbook = new ExcelJS.Workbook()
