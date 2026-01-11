@@ -19,8 +19,8 @@
       </div>
     </div>
     <div class="p-6">
-      <div v-if="loading" class="flex items-center justify-center py-12">
-        <div class="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
+      <div v-if="loading">
+        <ChartSkeleton />
       </div>
       <div v-else-if="error" class="flex items-center justify-center py-12">
         <div class="text-center">
@@ -36,6 +36,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, onBeforeUnmount, nextTick } from 'vue'
+import ChartSkeleton from '~/components/skeletons/admin/graphs/ChartSkeleton.vue'
 
 interface Props {
   title: string
