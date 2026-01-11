@@ -43,8 +43,8 @@ export default defineNuxtConfig({
       link: [
         {
           rel: 'icon',
-          type: 'image/x-icon',
-          href: '/favicon.ico',
+          type: 'image/jpeg',
+          href: '/images/boljoonlogo.jpg',
         },
       ],
     },

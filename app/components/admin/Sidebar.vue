@@ -55,7 +55,7 @@
 
     <nav class="flex-1 overflow-y-auto overflow-x-hidden px-2 pt-2 pb-2">
       <ul class="space-y-1">
-        <li v-for="item in ADMIN_MENU" :key="item.path">
+        <li v-for="item in filteredMenu" :key="item.path">
       <NuxtLink
         :to="item.path"
             :class="[
@@ -134,6 +134,18 @@ import { ADMIN_MENU } from '~/constants/admin/adminMenu'
 import type { AdminMenuItem } from '~/types/admin/menu'
 import { useSidebar } from '~/composables/ui/useSidebar'
 import { useSidebarStore } from '~/stores/sidebarStore'
+import { useUserPermissions } from '~/composables/user/useUserPermissions'
+
+const { canManageUsers } = useUserPermissions()
+
+const filteredMenu = computed(() => {
+  return ADMIN_MENU.filter(item => {
+    if (item.path === '/admin/users') {
+      return canManageUsers.value
+    }
+    return true
+  })
+})
 
 const {
   collapsed,

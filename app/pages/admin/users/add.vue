@@ -206,6 +206,10 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  middleware: 'admin'
+})
+
 import Button from '~/components/ui/Button.vue'
 import ErrorMessage from '~/components/ui/ErrorMessage.vue'
 import SelectInput from '~/components/ui/SelectInput.vue'

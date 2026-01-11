@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen flex bg-brand-bg">
+  <div class="h-screen flex bg-brand-bg overflow-hidden">
     <div class="w-full md:w-1/2 flex flex-col justify-center px-8 py-12 bg-white">
       <div class="max-w-md w-full mx-auto space-y-8">
         <h1 class="text-4xl font-extrabold text-brand-blue mb-2">Welcome to Kwentas Klaras</h1>
-        <p class="text-brand-green mb-8">Hey, welcome back let's get you signed in</p>
+        <p class="text-brand-green mb-8">Accountability Project Management System for Municipality of Boljoon</p>
         <form class="space-y-6" @submit.prevent="handleSubmit">
           <div class="space-y-2">
             <input
@@ -78,16 +78,12 @@
             </button>
           </div>
         </form>
-        <div class="mt-8 text-center text-sm text-brand-green">
-          Don't have an account?
-          <a href="#" class="text-brand-blue font-medium hover:underline">Sign Up</a>
-        </div>
       </div>
     </div>
     <div class="hidden md:flex w-1/2 relative overflow-hidden">
       <div class="absolute inset-0 bg-gray-300 opacity-60 z-0"></div>
       <div class="absolute inset-0 bg-brand-blue opacity-20 z-10"></div>
-      <img src="https://images.unsplash.com/photo-1616763355603-9755a640a287?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80" alt="Illustration" class="w-full h-full object-cover relative z-20" />
+      <img src="/images/loginlogo.jpg" alt="Municipality of Boljoon Logo" class="w-full h-full object-cover relative z-20" />
     </div>
   </div>
 </template>

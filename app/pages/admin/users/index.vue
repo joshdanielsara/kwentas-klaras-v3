@@ -171,6 +171,10 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  middleware: 'admin'
+})
+
 import StatCard from '~/components/ui/StatCard.vue'
 import SearchInput from '~/components/ui/SearchInput.vue'
 import ErrorMessage from '~/components/ui/ErrorMessage.vue'
