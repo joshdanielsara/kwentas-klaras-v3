@@ -9,5 +9,6 @@ export interface IProjectActivityRepository {
     metadata?: string
   }): Promise<ProjectActivity>
   findByProjectId(projectId: string): Promise<ProjectActivity[]>
+  findRecent(limit: number): Promise<ProjectActivity[]>
 }
 

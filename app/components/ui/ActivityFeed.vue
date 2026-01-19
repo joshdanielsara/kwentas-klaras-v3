@@ -12,32 +12,32 @@
       </button>
     </div>
     </div>
-    <div class="p-4 lg:p-6 flex flex-col">
+    <div class="flex flex-col h-[500px] relative">
       <template v-if="$slots.default">
-        <div class="relative pl-4">
-          <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-brand-blue/30 to-brand-green/30 rounded-full"></div>
+        <div class="relative pl-4 pr-4 lg:pl-6 lg:pr-6 pt-4 lg:pt-6 pb-4 lg:pb-6 h-full overflow-y-auto custom-scrollbar">
+          <div class="absolute left-4 lg:left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-brand-blue/30 to-brand-green/30 rounded-full"></div>
           <div class="space-y-4 lg:space-y-6">
-        <slot />
+            <slot />
           </div>
         </div>
       </template>
       <template v-else-if="activities && activities.length > 0">
-        <div class="relative pl-4">
-          <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-brand-blue/30 to-brand-green/30 rounded-full"></div>
+        <div class="relative pl-4 pr-4 lg:pl-6 lg:pr-6 pt-4 lg:pt-6 pb-4 lg:pb-6 h-full overflow-y-auto custom-scrollbar">
+          <div class="absolute left-4 lg:left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-brand-blue/30 to-brand-green/30 rounded-full"></div>
           <div class="space-y-4 lg:space-y-6">
-        <ActivityItem
-          v-for="(activity, index) in activities"
-          :key="index"
-          :title="activity.title"
-          :description="activity.description"
-          :time="activity.time"
+            <ActivityItem
+              v-for="(activity, index) in activities"
+              :key="index"
+              :title="activity.title"
+              :description="activity.description"
+              :time="activity.time"
               icon-bg-color="bg-brand-blue/10"
               icon-color="text-brand-blue"
             />
           </div>
         </div>
       </template>
-      <div v-else class="flex items-center justify-center py-12">
+      <div v-else class="flex items-center justify-center h-full p-4 lg:p-6">
         <div class="text-center">
           <div class="w-16 h-16 mx-auto mb-4 bg-brand-blue/10 rounded-full flex items-center justify-center">
             <svg class="w-8 h-8 text-brand-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,3 +66,28 @@ defineEmits<{
 }>()
 </script>
 
+<style scoped>
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 0;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #CBD5E1;
+  border-radius: 2px 0 0 2px;
+  margin-right: 0;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #94A3B8;
+}
+</style>

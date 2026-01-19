@@ -4,7 +4,8 @@
     
     <main class="flex-1 flex flex-col overflow-hidden transition-all duration-300">
       <div :class="[...animations.pageContainerClasses.value]" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-brand-bg">
-        <div class="space-y-8 min-h-screen">
+        <DashboardSkeleton v-if="isLoading" />
+        <div v-else class="space-y-8 min-h-screen">
           <PageHeader
             :title="PAGE_HEADERS.dashboard.title"
             :description="PAGE_HEADERS.dashboard.description"
@@ -60,13 +61,14 @@
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
             <div class="lg:col-span-2">
               <PieChart
-                title="Utilization Rate"
+                :key="`chart-${averageUtilizationRate}`"
+                :title="utilizationRateTitle"
                 :series="chartSeries"
                 :options="chartOptions"
               />
             </div>
             <div class="lg:col-span-1">
-              <ActivityFeed :activities="activities" @view-all="handleViewAll" />
+              <ActivityFeed :activities="[...activities]" @view-all="handleViewAll" />
             </div>
           </div>
           </div>
@@ -80,17 +82,36 @@ import StatCard from '~/components/ui/StatCard.vue'
 import PageHeader from '~/components/ui/PageHeader.vue'
 import ActivityFeed from '~/components/ui/ActivityFeed.vue'
 import PieChart from '~/components/ui/PieChart.vue'
+import DashboardSkeleton from '~/components/skeletons/admin/DashboardSkeleton.vue'
 import { PAGE_HEADERS } from '~/constants/pages/headers'
 import { getStatIconColor, getIconBgColor } from '~/constants/ui/statColors'
 import { useDashboard } from '~/composables/dashboard/useDashboard'
 import { useUtilizationRate } from '~/composables/dashboard/useUtilizationRate'
 import { useUserPermissions } from '~/composables/user/useUserPermissions'
 import { usePageAnimations } from '~/composables/ui/usePageAnimations'
+import { useProjectFormatting } from '~/composables/project/useProjectFormatting'
+import { useAuthHeaders } from '~/composables/auth/useAuthHeaders'
 
-const { activities, handleViewAll } = useDashboard()
-const { chartOptions, chartSeries } = useUtilizationRate()
+const { activities, loading: dashboardLoading, error: dashboardError, handleViewAll, fetchDashboard } = useDashboard()
+const { chartOptions, chartSeries, averageUtilizationRate, loading: utilizationLoading, fetchUtilizationData } = useUtilizationRate()
 const { canManageProjects } = useUserPermissions()
 const animations = usePageAnimations()
+const { formatNumber } = useProjectFormatting()
+
+const utilizationRateTitle = computed(() => {
+  const rate = typeof averageUtilizationRate === 'number' ? averageUtilizationRate : averageUtilizationRate.value
+  return `Utilization Rate Distribution (Avg: ${rate.toFixed(2)}%)`
+})
+
+const dashboardStats = ref<{
+  totalUsers: number
+  activeProjects: number
+  totalBudget: number
+  totalApprovedDisbursements: number
+  totalObligations: number
+  utilizationRate: number
+} | null>(null)
+const statsLoading = ref(false)
 
 const dashboardButtonText = computed(() => {
   return canManageProjects.value ? PAGE_HEADERS.dashboard.buttonText : undefined
@@ -100,50 +121,124 @@ const dashboardButtonAction = computed(() => {
   return canManageProjects.value ? () => { navigateTo('/admin/projects/add') } : undefined
 })
 
-const stats = [
-  {
-    title: 'Total Users',
-    value: '1234',
-    change: '12.5%',
-    changeType: 'positive' as 'positive' | 'negative' | 'neutral',
-    iconColor: 'text-brand-blue',
-    color: 'blue'
-  },
-  {
-    title: 'Active Projects',
-    value: '56',
-    change: '8 new',
-    changeType: 'positive' as 'positive' | 'negative' | 'neutral',
-    iconColor: 'text-purple-600',
-    color: 'purple'
-  },
-  {
-    title: 'Revenue',
-    value: '$45.2k',
-    change: '23.1%',
-    changeType: 'positive' as 'positive' | 'negative' | 'neutral',
-    iconColor: 'text-brand-green',
-    color: 'green'
-  },
-  {
-    title: 'Tasks Completed',
-    value: '892',
-    change: '78%',
-    changeType: 'neutral' as 'positive' | 'negative' | 'neutral',
-    iconColor: 'text-orange-600',
-    color: 'orange'
+const stats = computed(() => {
+  if (!dashboardStats.value) {
+    return [
+      {
+        title: 'Total Users',
+        value: '0',
+        change: '0',
+        changeType: 'neutral' as const,
+        iconColor: 'text-brand-blue',
+        color: 'blue'
+      },
+      {
+        title: 'Active Projects',
+        value: '0',
+        change: '0',
+        changeType: 'neutral' as const,
+        iconColor: 'text-purple-600',
+        color: 'purple'
+      },
+      {
+        title: 'Total Budget',
+        value: '₱0.00',
+        change: '0',
+        changeType: 'neutral' as const,
+        iconColor: 'text-brand-green',
+        color: 'green'
+      },
+      {
+        title: 'Total Obligations',
+        value: '₱0.00',
+        change: '0',
+        changeType: 'neutral' as const,
+        iconColor: 'text-orange-600',
+        color: 'orange'
+      }
+    ]
   }
-]
+
+  return [
+    {
+      title: 'Total Users',
+      value: dashboardStats.value.totalUsers.toString(),
+      change: '0',
+      changeType: 'neutral' as const,
+      iconColor: 'text-brand-blue',
+      color: 'blue'
+    },
+    {
+      title: 'Active Projects',
+      value: dashboardStats.value.activeProjects.toString(),
+      change: '0',
+      changeType: 'neutral' as const,
+      iconColor: 'text-purple-600',
+      color: 'purple'
+    },
+    {
+      title: 'Total Budget',
+      value: `₱${formatNumber(dashboardStats.value.totalBudget)}`,
+      change: '0',
+      changeType: 'neutral' as const,
+      iconColor: 'text-brand-green',
+      color: 'green'
+    },
+    {
+      title: 'Total Obligations',
+      value: `₱${formatNumber(dashboardStats.value.totalObligations)}`,
+      change: '0',
+      changeType: 'neutral' as const,
+      iconColor: 'text-orange-600',
+      color: 'orange'
+    }
+  ]
+})
 
 const headerStats = computed(() => {
-  return stats.slice(0, 2).map((stat, index) => ({
+  return stats.value.slice(0, 2).map((stat: typeof stats.value[0], index: number) => ({
     ...stat,
     iconIndex: index
   }))
 })
 
-onMounted(() => {
+const loadDashboardData = async () => {
+  statsLoading.value = true
+  try {
+    const headers = await useAuthHeaders()
+    const response = await $fetch<{
+      success: boolean
+      stats: {
+        totalUsers: number
+        activeProjects: number
+        totalBudget: number
+        totalApprovedDisbursements: number
+        totalObligations: number
+        utilizationRate: number
+      }
+    }>('/api/dashboard', { headers })
+    
+    if (response.success) {
+      dashboardStats.value = response.stats
+    }
+  } catch (error) {
+    console.error('Failed to load dashboard stats:', error)
+  } finally {
+    statsLoading.value = false
+  }
+}
+
+const isLoading = computed(() => {
+  return dashboardLoading.value || utilizationLoading.value || statsLoading.value
+})
+
+onMounted(async () => {
   animations.markPageLoaded()
+  await Promise.all([
+    fetchDashboard(),
+    fetchUtilizationData(),
+    loadDashboardData()
+  ])
 })
 </script>
 
