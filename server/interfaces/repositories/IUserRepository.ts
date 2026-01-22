@@ -7,8 +7,11 @@ export interface IUserRepository {
   updateById(id: string, update: Prisma.UserUpdateInput): Promise<User>;
   deleteById(id: string): Promise<User>;
   findByFirebaseId(firebaseId: string): Promise<User | null>;
+  findByFirebaseIdForAuth(firebaseId: string): Promise<User | null>;
   findAllIncludingNullFirebaseId(): Promise<User[]>;
   findByEmail(email: string): Promise<User | null>;
   findByUsername(username: string): Promise<User | null>;
+  findDeleted(): Promise<User[]>;
+  restoreById(id: string): Promise<User>;
 }
 

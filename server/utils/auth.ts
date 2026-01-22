@@ -34,12 +34,19 @@ export async function requireAuth(event: H3Event<EventHandlerRequest>): Promise<
   }
 
   const userRepository = new UserRepository()
-  const dbUser = await userRepository.findByFirebaseId(decodedToken.uid)
+  const dbUser = await userRepository.findByFirebaseIdForAuth(decodedToken.uid)
 
   if (!dbUser) {
     throw createError({
       statusCode: 401,
       message: 'User not found'
+    })
+  }
+
+  if (dbUser.deletedAt) {
+    throw createError({
+      statusCode: 403,
+      message: 'User account has been deleted'
     })
   }
 

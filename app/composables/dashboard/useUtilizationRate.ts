@@ -1,14 +1,11 @@
 import { ref, computed, readonly } from 'vue'
 import { useErrorHandler } from '../error/useErrorHandler'
 import { useAuthHeaders } from '../auth/useAuthHeaders'
-
-export interface UtilizationRateData {
-  label: string
-  value: number
-  color: string
-}
+import { useDashboardStore } from '~/stores/dashboardStore'
+import type { UtilizationRateData } from '~/types/dashboard/dashboard'
 
 export const useUtilizationRate = () => {
+  const dashboardStore = useDashboardStore()
   const utilizationData = ref<UtilizationRateData[]>([])
   const averageUtilizationRate = ref<number>(0)
   const loading = ref(false)
@@ -42,9 +39,21 @@ export const useUtilizationRate = () => {
     loading.value = false
   }
 
-  const chartSeries = computed(() =>
-    utilizationData.value.map(item => item.value)
-  )
+  const effectiveUtilizationData = computed(() => {
+    return utilizationData.value.length > 0 
+      ? utilizationData.value 
+      : dashboardStore.utilizationData.value
+  })
+
+  const effectiveAverageRate = computed(() => {
+    return averageUtilizationRate.value > 0 
+      ? averageUtilizationRate.value 
+      : (dashboardStore.stats.value?.utilizationRate || 0)
+  })
+
+  const chartSeries = computed(() => {
+    return effectiveUtilizationData.value.map(item => item.value)
+  })
 
   const chartOptions = computed(() => {
     return {
@@ -67,8 +76,8 @@ export const useUtilizationRate = () => {
         background: 'transparent',
         fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
       },
-      labels: utilizationData.value.map(item => item.label),
-      colors: utilizationData.value.map(item => item.color),
+      labels: effectiveUtilizationData.value.map(item => item.label),
+      colors: effectiveUtilizationData.value.map(item => item.color),
       legend: {
         show: true,
         position: 'bottom',
@@ -118,13 +127,19 @@ export const useUtilizationRate = () => {
     }
   })
 
+  const setUtilizationData = (data: UtilizationRateData[], avgRate: number) => {
+    utilizationData.value = data
+    averageUtilizationRate.value = avgRate
+  }
+
   return {
     utilizationData: readonly(utilizationData),
-    averageUtilizationRate: readonly(averageUtilizationRate),
+    averageUtilizationRate: computed(() => effectiveAverageRate.value),
     loading: readonly(loading),
     error: readonly(error),
     chartOptions,
     chartSeries,
-    fetchUtilizationData
+    fetchUtilizationData,
+    setUtilizationData,
   }
 }

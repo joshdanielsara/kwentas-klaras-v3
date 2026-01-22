@@ -15,7 +15,8 @@ export class UserRepository implements IUserRepository {
 
   async findAll(): Promise<User[]> {
     const users = await this.client.user.findMany();
-    const validUsers = users.filter((user): user is User => 
+    const activeUsers = users.filter(user => !user.deletedAt);
+    const validUsers = activeUsers.filter((user): user is User => 
       user.firebaseId !== null &&
       user.firstName !== null &&
       user.lastName !== null &&
@@ -30,8 +31,26 @@ export class UserRepository implements IUserRepository {
     });
   }
 
+  async findDeleted(): Promise<User[]> {
+    const users = await this.client.user.findMany();
+    const deletedUsers = users.filter(user => user.deletedAt !== null);
+    return deletedUsers.sort((a, b) => {
+      const aTime = a.deletedAt?.getTime() ?? 0;
+      const bTime = b.deletedAt?.getTime() ?? 0;
+      return bTime - aTime;
+    });
+  }
+
+  async restoreById(id: string): Promise<User> {
+    return this.client.user.update({
+      where: { id },
+      data: { deletedAt: null }
+    });
+  }
+
   async findById(id: string): Promise<User | null> {
-    return this.client.user.findUnique({ where: { id } });
+    const user = await this.client.user.findUnique({ where: { id } });
+    return user && !user.deletedAt ? user : null;
   }
 
   async updateById(id: string, update: Prisma.UserUpdateInput): Promise<User> {
@@ -39,24 +58,37 @@ export class UserRepository implements IUserRepository {
   }
 
   async deleteById(id: string): Promise<User> {
-    return this.client.user.delete({ where: { id } });
+    return this.client.user.update({
+      where: { id },
+      data: { deletedAt: new Date() }
+    });
   }
 
   async findByFirebaseId(firebaseId: string): Promise<User | null> {
-    return this.client.user.findUnique({ where: { firebaseId } });
+    const user = await this.client.user.findUnique({ where: { firebaseId } });
+    return user && !user.deletedAt ? user : null;
+  }
+
+  async findByFirebaseIdForAuth(firebaseId: string): Promise<User | null> {
+    return this.client.user.findUnique({ 
+      where: { firebaseId }
+    });
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.client.user.findUnique({ where: { email } });
+    const user = await this.client.user.findUnique({ where: { email } });
+    return user && !user.deletedAt ? user : null;
   }
 
   async findByUsername(username: string): Promise<User | null> {
-    return this.client.user.findUnique({ where: { username } });
+    const user = await this.client.user.findUnique({ where: { username } });
+    return user && !user.deletedAt ? user : null;
   }
 
   async findAllIncludingNullFirebaseId(): Promise<User[]> {
     const users = await this.client.user.findMany();
-    return users.sort((a, b) => {
+    const activeUsers = users.filter(user => !user.deletedAt);
+    return activeUsers.sort((a, b) => {
       const aTime = a.createdAt?.getTime() ?? 0;
       const bTime = b.createdAt?.getTime() ?? 0;
       return bTime - aTime;

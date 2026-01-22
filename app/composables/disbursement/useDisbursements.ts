@@ -1,6 +1,7 @@
 import type { IDisbursement } from '~/types/disbursement/disbursement'
 import type { DisbursementStatus } from '~/constants/disbursement/status'
 import { useAuthHeaders } from '../auth/useAuthHeaders'
+import { useDashboardStore } from '~/stores/dashboardStore'
 
 export const useDisbursements = () => {
   const disbursements = ref<IDisbursement[]>([])
@@ -72,6 +73,8 @@ export const useDisbursements = () => {
         } else {
           disbursements.value[index] = response.disbursement
         }
+        const dashboardStore = useDashboardStore()
+        dashboardStore.refresh()
         return response.disbursement
       }
     } catch (err: any) {
@@ -108,6 +111,8 @@ export const useDisbursements = () => {
         if (index !== -1) {
           disbursements.value[index] = response.disbursement
         }
+        const dashboardStore = useDashboardStore()
+        dashboardStore.refresh()
         return response.disbursement
       }
     } catch (err: any) {

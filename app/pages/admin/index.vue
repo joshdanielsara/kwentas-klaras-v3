@@ -7,7 +7,7 @@
         <DashboardSkeleton v-if="isLoading" />
         <div v-else class="space-y-8 min-h-screen">
           <PageHeader
-            :title="PAGE_HEADERS.dashboard.title"
+            :title="welcomeMessage"
             :description="PAGE_HEADERS.dashboard.description"
             :button-text="dashboardButtonText"
             :button-action="dashboardButtonAction"
@@ -68,7 +68,7 @@
               />
             </div>
             <div class="lg:col-span-1">
-              <ActivityFeed :activities="[...activities]" @view-all="handleViewAll" />
+              <ActivityFeed :activities="limitedActivities" @view-all="handleViewAll" />
             </div>
           </div>
           </div>
@@ -85,33 +85,26 @@ import PieChart from '~/components/ui/PieChart.vue'
 import DashboardSkeleton from '~/components/skeletons/admin/DashboardSkeleton.vue'
 import { PAGE_HEADERS } from '~/constants/pages/headers'
 import { getStatIconColor, getIconBgColor } from '~/constants/ui/statColors'
-import { useDashboard } from '~/composables/dashboard/useDashboard'
+import { useDashboardStore } from '~/stores/dashboardStore'
 import { useUtilizationRate } from '~/composables/dashboard/useUtilizationRate'
 import { useUserPermissions } from '~/composables/user/useUserPermissions'
 import { usePageAnimations } from '~/composables/ui/usePageAnimations'
 import { useProjectFormatting } from '~/composables/project/useProjectFormatting'
-import { useAuthHeaders } from '~/composables/auth/useAuthHeaders'
+import { useWelcomeMessage } from '~/composables/dashboard/useWelcomeMessage'
 
-const { activities, loading: dashboardLoading, error: dashboardError, handleViewAll, fetchDashboard } = useDashboard()
-const { chartOptions, chartSeries, averageUtilizationRate, loading: utilizationLoading, fetchUtilizationData } = useUtilizationRate()
+const dashboardStore = useDashboardStore()
+const { activities, stats: dashboardStats, loading: dashboardLoading } = dashboardStore
+const { chartOptions, chartSeries, averageUtilizationRate } = useUtilizationRate()
+const limitedActivities = computed(() => activities.value.slice(0, 10))
 const { canManageProjects } = useUserPermissions()
 const animations = usePageAnimations()
 const { formatNumber } = useProjectFormatting()
+const { welcomeMessage } = useWelcomeMessage()
 
 const utilizationRateTitle = computed(() => {
-  const rate = typeof averageUtilizationRate === 'number' ? averageUtilizationRate : averageUtilizationRate.value
+  const rate = dashboardStats.value?.utilizationRate || 0
   return `Utilization Rate Distribution (Avg: ${rate.toFixed(2)}%)`
 })
-
-const dashboardStats = ref<{
-  totalUsers: number
-  activeProjects: number
-  totalBudget: number
-  totalApprovedDisbursements: number
-  totalObligations: number
-  utilizationRate: number
-} | null>(null)
-const statsLoading = ref(false)
 
 const dashboardButtonText = computed(() => {
   return canManageProjects.value ? PAGE_HEADERS.dashboard.buttonText : undefined
@@ -202,43 +195,17 @@ const headerStats = computed(() => {
   }))
 })
 
-const loadDashboardData = async () => {
-  statsLoading.value = true
-  try {
-    const headers = await useAuthHeaders()
-    const response = await $fetch<{
-      success: boolean
-      stats: {
-        totalUsers: number
-        activeProjects: number
-        totalBudget: number
-        totalApprovedDisbursements: number
-        totalObligations: number
-        utilizationRate: number
-      }
-    }>('/api/dashboard', { headers })
-    
-    if (response.success) {
-      dashboardStats.value = response.stats
-    }
-  } catch (error) {
-    console.error('Failed to load dashboard stats:', error)
-  } finally {
-    statsLoading.value = false
-  }
+const handleViewAll = () => {
+  navigateTo('/admin/projects')
 }
 
 const isLoading = computed(() => {
-  return dashboardLoading.value || utilizationLoading.value || statsLoading.value
+  return dashboardLoading.value || !dashboardStats.value
 })
 
 onMounted(async () => {
   animations.markPageLoaded()
-  await Promise.all([
-    fetchDashboard(),
-    fetchUtilizationData(),
-    loadDashboardData()
-  ])
+  await dashboardStore.fetchDashboard()
 })
 </script>
 

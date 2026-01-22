@@ -1,6 +1,7 @@
 import type { IAdditionalBudget } from '~/types/additionalBudget/additionalBudget'
 import type { BudgetStatus } from '~/constants/additionalBudget/status'
 import { useAuthHeaders } from '../auth/useAuthHeaders'
+import { useDashboardStore } from '~/stores/dashboardStore'
 
 export const useAdditionalBudgets = () => {
   const budgets = ref<IAdditionalBudget[]>([])
@@ -65,6 +66,8 @@ export const useAdditionalBudgets = () => {
 
       if (response.success) {
         budgets.value.push(response.budget)
+        const dashboardStore = useDashboardStore()
+        dashboardStore.refresh()
         return response.budget
       }
     } catch (err: any) {

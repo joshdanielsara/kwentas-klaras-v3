@@ -42,9 +42,22 @@
                 <button
                   v-if="canManageProjects"
                   @click="handleEditClick"
-                  class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                 >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
                   Edit Project
+                </button>
+                <button
+                  v-if="canManageProjects"
+                  @click="handleDeleteClick"
+                  class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Delete Project
                 </button>
               </div>
             </div>
@@ -926,6 +939,17 @@
       </div>
     </main>
 
+    <ConfirmModal
+      :is-open="showDeleteModal"
+      :title="MODAL_MESSAGES.DELETE_PROJECT.title"
+      :message="deleteModalMessage"
+      :confirm-text="MODAL_MESSAGES.DELETE_PROJECT.confirmText"
+      :cancel-text="MODAL_MESSAGES.DELETE_PROJECT.cancelText"
+      :loading="deleteLoading"
+      :loading-text="MODAL_MESSAGES.DELETE_PROJECT.loadingText"
+      @confirm="onConfirmDelete"
+      @cancel="closeDeleteModal"
+    />
   </div>
 </template>
 
@@ -933,7 +957,9 @@
 import PieChart from '~/components/ui/PieChart.vue'
 import Accordion from '~/components/ui/Accordion.vue'
 import GeotagMap from '~/components/shared/GeotagMap.vue'
+import ConfirmModal from '~/components/ui/ConfirmModal.vue'
 import ProjectDetailSkeleton from '~/components/skeletons/admin/projects/ProjectDetailSkeleton.vue'
+import { MODAL_MESSAGES } from '~/constants/ui/modalMessages'
 import { useProjectDetail } from '~/composables/project/useProjectDetail'
 import { useProjectFinancials } from '~/composables/project/useProjectFinancials'
 import { useProjectCharts } from '~/composables/project/useProjectCharts'
@@ -942,6 +968,9 @@ import { TAB_IDS } from '~/constants/project/detailTabs'
 import { useUserPermissions } from '~/composables/user/useUserPermissions'
 import { useLoadingState } from '~/composables/ui/useLoadingState'
 import { usePageAnimations } from '~/composables/ui/usePageAnimations'
+import { useErrorHandler } from '~/composables/error/useErrorHandler'
+import { useAuthHeaders } from '~/composables/auth/useAuthHeaders'
+import { useDashboardStore } from '~/stores/dashboardStore'
 
 const route = useRoute()
 const router = useRouter()
@@ -955,6 +984,46 @@ const setActiveTab = (tabId: string) => {
 
 const handleEditClick = () => {
   router.push(`/admin/projects/edit/${projectId}`)
+}
+
+const showDeleteModal = ref(false)
+const deleteLoading = ref(false)
+const deleteModalMessage = computed(() => {
+  if (project.value) {
+    return `Are you sure you want to delete "${project.value.name}"? This action cannot be undone.`
+  }
+  return MODAL_MESSAGES.DELETE_PROJECT.message
+})
+
+const handleDeleteClick = () => {
+  if (!project.value) return
+  showDeleteModal.value = true
+}
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+}
+
+const onConfirmDelete = async () => {
+  if (!project.value) return
+  
+  deleteLoading.value = true
+  await useErrorHandler(async () => {
+    const headers = await useAuthHeaders()
+    const response = await $fetch<{ success: boolean; message?: string }>(`/api/projects/${projectId}`, {
+      method: 'DELETE',
+      headers
+    })
+
+    if (response.success) {
+      const dashboardStore = useDashboardStore()
+      dashboardStore.refresh()
+      navigateTo('/admin/projects')
+    }
+  }, {
+    defaultMessage: 'Failed to delete project',
+  })
+  deleteLoading.value = false
 }
 
 const {

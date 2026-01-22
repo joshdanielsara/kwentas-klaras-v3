@@ -36,6 +36,9 @@ export class ProjectActivityRepository implements IProjectActivityRepository {
 
   async findRecent(limit: number): Promise<ProjectActivity[]> {
     return this.client.projectActivity.findMany({
+      where: {
+        createdAt: { not: null }
+      },
       take: limit,
       orderBy: { createdAt: 'desc' },
     })

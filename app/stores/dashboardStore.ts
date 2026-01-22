@@ -1,8 +1,15 @@
-import { DASHBOARD_QUICK_ACTIONS } from '~/constants/dashboard/quickActions'
-import type { QuickAction } from '~/types/ui/quickActions'
-import { useErrorHandler } from '../error/useErrorHandler'
-import { useAuthHeaders } from '../auth/useAuthHeaders'
-import type { DashboardActivity } from '~/types/dashboard/dashboard'
+import { useErrorHandler } from '~/composables/error/useErrorHandler'
+import { useAuthHeaders } from '~/composables/auth/useAuthHeaders'
+import type { DashboardStats, DashboardActivity, UtilizationRateData } from '~/types/dashboard/dashboard'
+
+const stats = ref<DashboardStats | null>(null)
+const activities = ref<DashboardActivity[]>([])
+const utilizationData = ref<UtilizationRateData[]>([])
+const loading = ref(false)
+const error = ref<string | null>(null)
+const lastFetched = ref<Date | null>(null)
+
+const CACHE_DURATION_MS = 5 * 60 * 1000
 
 const formatTimeAgo = (date: Date): string => {
   const now = new Date()
@@ -17,12 +24,19 @@ const formatTimeAgo = (date: Date): string => {
   return `${Math.floor(diffInSeconds / 31536000)} years ago`
 }
 
-export const useDashboard = () => {
-  const activities = ref<DashboardActivity[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+export const useDashboardStore = () => {
+  const isStale = computed(() => {
+    if (!lastFetched.value) return true
+    const now = new Date()
+    const diff = now.getTime() - lastFetched.value.getTime()
+    return diff > CACHE_DURATION_MS
+  })
 
-  const fetchDashboard = async () => {
+  const fetchDashboard = async (forceRefresh = false) => {
+    if (!forceRefresh && !isStale.value && stats.value) {
+      return
+    }
+
     loading.value = true
     error.value = null
 
@@ -45,21 +59,24 @@ export const useDashboard = () => {
             createdAt: Date | string
           }>
         }
-        utilizationData: Array<{
-          label: string
-          value: number
-          color: string
-        }>
+        utilizationData: UtilizationRateData[]
       }>('/api/dashboard', { headers })
 
       if (response.success) {
-        // Transform activities to match expected format
+        stats.value = {
+          totalUsers: response.stats.totalUsers,
+          activeProjects: response.stats.activeProjects,
+          totalBudget: response.stats.totalBudget,
+          totalApprovedDisbursements: response.stats.totalApprovedDisbursements,
+          totalObligations: response.stats.totalObligations,
+          utilizationRate: response.stats.utilizationRate,
+        }
+
         activities.value = response.stats.recentActivities.map((activity) => {
           const createdAt = typeof activity.createdAt === 'string' 
             ? new Date(activity.createdAt) 
             : activity.createdAt
           
-          // Format action as title
           const actionTitle = activity.action
             .split('_')
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -67,10 +84,13 @@ export const useDashboard = () => {
 
           return {
             title: actionTitle,
-            description: activity.description.replace(/<[^>]*>/g, ''), // Strip HTML tags
+            description: activity.description.replace(/<[^>]*>/g, ''),
             time: formatTimeAgo(createdAt),
           }
         })
+
+        utilizationData.value = response.utilizationData || []
+        lastFetched.value = new Date()
       }
     }, {
       defaultMessage: 'Failed to fetch dashboard data',
@@ -82,53 +102,27 @@ export const useDashboard = () => {
     loading.value = false
   }
 
-  const quickActions: QuickAction[] = DASHBOARD_QUICK_ACTIONS.map((action, index) => {
-    if (index === 0) {
-      return { ...action, onClick: () => navigateTo('/admin/projects') }
-    }
-    if (index === 1) {
-      return { ...action, onClick: () => navigateTo('/admin/users') }
-    }
-    return action
-  })
-
-  const handleViewAll = () => {
-    navigateTo('/admin/projects')
+  const refresh = () => {
+    return fetchDashboard(true)
   }
 
-  const setActivities = (activitiesData: Array<{
-    id: string
-    projectId: string
-    action: string
-    description: string
-    createdAt: Date | string
-  }>) => {
-    activities.value = activitiesData.map((activity) => {
-      const createdAt = typeof activity.createdAt === 'string' 
-        ? new Date(activity.createdAt) 
-        : activity.createdAt
-      
-      const actionTitle = activity.action
-        .split('_')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ')
-
-      return {
-        title: actionTitle,
-        description: activity.description.replace(/<[^>]*>/g, ''),
-        time: formatTimeAgo(createdAt),
-      }
-    })
+  const clear = () => {
+    stats.value = null
+    activities.value = []
+    utilizationData.value = []
+    lastFetched.value = null
+    error.value = null
   }
 
   return {
+    stats: readonly(stats),
     activities: readonly(activities),
+    utilizationData: readonly(utilizationData),
     loading: readonly(loading),
     error: readonly(error),
-    quickActions,
-    handleViewAll,
+    isStale,
     fetchDashboard,
-    setActivities,
+    refresh,
+    clear,
   }
 }
-

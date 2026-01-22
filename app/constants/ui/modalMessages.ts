@@ -36,6 +36,20 @@ export const MODAL_MESSAGES = {
     cancelText: 'Cancel',
     loadingText: 'Deleting...',
   },
+  DELETE_PROJECT: {
+    title: 'Delete Project',
+    message: 'Are you sure you want to delete this project? This action cannot be undone.',
+    confirmText: 'Delete Project',
+    cancelText: 'Cancel',
+    loadingText: 'Deleting...',
+  },
+  RESTORE_PROJECT: {
+    title: 'Restore Project',
+    message: 'Are you sure you want to restore this project?',
+    confirmText: 'Restore Project',
+    cancelText: 'Cancel',
+    loadingText: 'Restoring...',
+  },
   ADD_BUDGET: {
     title: 'Add Additional Budget',
     message: 'Are you sure you want to add this additional budget? Please review all the information before confirming.',

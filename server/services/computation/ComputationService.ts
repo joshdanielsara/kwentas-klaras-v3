@@ -177,5 +177,72 @@ export class ComputationService {
 
     return (approvedDisbursements / totalBudget) * 100;
   }
+
+  /**
+   * Calculate utilization rates for multiple projects in batch
+   * Returns a Map with projectId as key and utilizationRate as value
+   * @param projects - Array of projects with id and appropriation
+   * @param budgetsMap - Map of projectId to totalAddedBudget (optional, will fetch if not provided)
+   * @param disbursementsMap - Map of projectId to approved disbursements (optional, will fetch if not provided)
+   * @returns Map of projectId to utilizationRate
+   */
+  async calculateUtilizationRatesMap(
+    projects: Array<{ id: string; appropriation: number }>,
+    budgetsMap?: Map<string, number>,
+    disbursementsMap?: Map<string, number>
+  ): Promise<Map<string, number>> {
+    const utilizationRatesMap = new Map<string, number>();
+    
+    const [fetchedBudgetsMap, fetchedDisbursementsMap] = await Promise.all([
+      budgetsMap ? Promise.resolve(budgetsMap) : this.calculateTotalAddedBudgetsMap(),
+      disbursementsMap ? Promise.resolve(disbursementsMap) : this.calculateApprovedDisbursementsMap()
+    ]);
+
+    projects.forEach(project => {
+      if (!project.id || !project.appropriation) return;
+      
+      const totalAddedBudget = fetchedBudgetsMap.get(project.id) || 0;
+      const totalBudget = project.appropriation + totalAddedBudget;
+      
+      if (totalBudget === 0) {
+        utilizationRatesMap.set(project.id, 0);
+        return;
+      }
+
+      const approvedDisbursements = fetchedDisbursementsMap.get(project.id) || 0;
+      const utilizationRate = (approvedDisbursements / totalBudget) * 100;
+      utilizationRatesMap.set(project.id, utilizationRate);
+    });
+
+    return utilizationRatesMap;
+  }
+
+  /**
+   * Calculate approved disbursements for multiple projects
+   * Returns a Map with projectId as key and totalApprovedDisbursements as value
+   * @param projectIds - Array of project IDs (optional, if not provided, calculates for all projects)
+   * @returns Map of projectId to totalApprovedDisbursements
+   */
+  async calculateApprovedDisbursementsMap(projectIds?: string[]): Promise<Map<string, number>> {
+    const approvedDisbursementsMap = new Map<string, number>();
+    
+    let allDisbursements: Awaited<ReturnType<typeof this.disbursementRepo.findAll>>;
+    if (projectIds && projectIds.length > 0) {
+      const disbursementsPromises = projectIds.map(id => this.disbursementRepo.findByProjectId(id));
+      const disbursementsArrays = await Promise.all(disbursementsPromises);
+      allDisbursements = disbursementsArrays.flat();
+    } else {
+      allDisbursements = await this.disbursementRepo.findAll();
+    }
+    
+    allDisbursements
+      .filter(d => d.status === 'approved')
+      .forEach(disbursement => {
+        const currentTotal = approvedDisbursementsMap.get(disbursement.projectId) ?? 0;
+        approvedDisbursementsMap.set(disbursement.projectId, currentTotal + disbursement.amount);
+      });
+    
+    return approvedDisbursementsMap;
+  }
 }
 

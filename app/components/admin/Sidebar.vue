@@ -28,17 +28,18 @@
   >
     <div
       :class="[
-        'relative flex h-16 items-center border-b border-gray-300',
-        collapsed && !isMobile ? 'justify-center px-4' : 'px-6',
+        'relative flex border-b border-gray-300',
+        collapsed && !isMobile ? 'justify-center px-4 h-16 items-center' : 'px-6 py-4 min-h-[4rem]',
       ]"
     >
       <div
         v-if="!collapsed || isMobile"
-        class="flex items-center gap-3 flex-1 min-w-0 overflow-hidden"
+        class="flex flex-col gap-1 flex-1 min-w-0"
       >
-        <h1 class="text-xl font-bold text-brand-blue flex-1 min-w-0 break-words">
-          Admin Panel
+        <h1 class="text-lg font-bold text-brand-blue leading-snug">
+          Kwentas Klaras Digital PMIS
         </h1>
+        <p class="text-[11px] text-gray-500 leading-snug">Municipality of Boljoon</p>
         <button
           v-if="isMobile"
           @click="toggleCollapse"
@@ -135,12 +136,17 @@ import type { AdminMenuItem } from '~/types/admin/menu'
 import { useSidebar } from '~/composables/ui/useSidebar'
 import { useSidebarStore } from '~/stores/sidebarStore'
 import { useUserPermissions } from '~/composables/user/useUserPermissions'
+import { useAuthStore } from '~/stores/authStore'
 
 const { canManageUsers } = useUserPermissions()
+const authStore = useAuthStore()
 
 const filteredMenu = computed(() => {
   return ADMIN_MENU.filter(item => {
     if (item.path === '/admin/users') {
+      if (!authStore.user.value) {
+        return true
+      }
       return canManageUsers.value
     }
     return true

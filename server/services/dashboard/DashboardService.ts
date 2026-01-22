@@ -7,28 +7,7 @@ import { ComputationService } from '../computation/ComputationService'
 import { ProjectActivitySerializer } from '../../serializers/ProjectActivitySerializer'
 import type { PrismaClient } from '@prisma/client'
 import { prisma } from '../../lib/prisma'
-
-export interface DashboardStats {
-  totalUsers: number
-  activeProjects: number
-  totalBudget: number
-  totalApprovedDisbursements: number
-  totalObligations: number
-  utilizationRate: number
-  recentActivities: Array<{
-    id: string
-    projectId: string
-    action: string
-    description: string
-    createdAt: Date | string | null
-  }>
-}
-
-export interface UtilizationRateData {
-  label: string
-  value: number
-  color: string
-}
+import type { DashboardStats, UtilizationRateData } from '../../types/dashboard/dashboard'
 
 export class DashboardService {
   private userRepo: UserRepository
@@ -58,40 +37,42 @@ export class DashboardService {
       this.activityRepo.findRecent(10)
     ])
 
-    const currentYear = new Date().getFullYear()
-    const activeProjects = projects.filter(p => p.year && p.year >= currentYear)
+    const activeProjects = projects
 
-    // Calculate total budget (appropriation + added budgets)
     const budgetsMap = await this.computationService.calculateTotalAddedBudgetsMap()
     const totalBudget = projects.reduce((sum, project) => {
       const addedBudget = budgetsMap.get(project.id) || 0
       return sum + (project.appropriation || 0) + addedBudget
     }, 0)
 
-    // Calculate total approved disbursements
     const totalApprovedDisbursements = disbursements
       .filter(d => d.status === 'approved')
       .reduce((sum, d) => sum + (d.amount || 0), 0)
 
-    // Calculate total obligations
     const totalObligations = obligations.reduce((sum, o) => sum + (o.amount || 0), 0)
 
-    // Calculate average utilization rate
+    const projectsWithData = projects.filter(p => p.id && p.appropriation)
+    const approvedDisbursementsMap = new Map<string, number>()
+    disbursements
+      .filter(d => d.status === 'approved')
+      .forEach(d => {
+        const current = approvedDisbursementsMap.get(d.projectId) || 0
+        approvedDisbursementsMap.set(d.projectId, current + d.amount)
+      })
+    
+    const utilizationRatesMap = await this.computationService.calculateUtilizationRatesMap(
+      projectsWithData.map(p => ({ id: p.id!, appropriation: p.appropriation })),
+      budgetsMap,
+      approvedDisbursementsMap
+    )
+    
     let totalUtilization = 0
-    let projectCount = 0
-    for (const project of projects) {
-      if (project.id && project.appropriation) {
-        const utilizationRate = await this.computationService.calculateUtilizationRate(
-          project.id,
-          project.appropriation
-        )
-        totalUtilization += utilizationRate
-        projectCount++
-      }
-    }
-    const utilizationRate = projectCount > 0 ? totalUtilization / projectCount : 0
+    projectsWithData.forEach(project => {
+      const rate = utilizationRatesMap.get(project.id!) || 0
+      totalUtilization += rate
+    })
+    const utilizationRate = projectsWithData.length > 0 ? totalUtilization / projectsWithData.length : 0
 
-    // Get recent activities (filter out null createdAt and ensure proper typing)
     const recentActivities = activities
       .filter((activity): activity is typeof activity & { createdAt: Date } => activity.createdAt !== null)
       .map(activity => {
@@ -118,19 +99,21 @@ export class DashboardService {
 
   async getUtilizationRateData(): Promise<UtilizationRateData[]> {
     const projects = await this.projectRepo.findAll()
-    const utilizationRates: number[] = []
+    const projectsWithData = projects.filter(p => p.id && p.appropriation)
+    
+    const [budgetsMap, approvedDisbursementsMap] = await Promise.all([
+      this.computationService.calculateTotalAddedBudgetsMap(),
+      this.computationService.calculateApprovedDisbursementsMap()
+    ])
+    
+    const utilizationRatesMap = await this.computationService.calculateUtilizationRatesMap(
+      projectsWithData.map(p => ({ id: p.id!, appropriation: p.appropriation })),
+      budgetsMap,
+      approvedDisbursementsMap
+    )
+    
+    const utilizationRates = Array.from(utilizationRatesMap.values())
 
-    for (const project of projects) {
-      if (project.id && project.appropriation) {
-        const rate = await this.computationService.calculateUtilizationRate(
-          project.id,
-          project.appropriation
-        )
-        utilizationRates.push(rate)
-      }
-    }
-
-    // Categorize projects by utilization rate
     const active = utilizationRates.filter(r => r >= 50 && r < 100).length
     const idle = utilizationRates.filter(r => r < 50).length
     const overUtilized = utilizationRates.filter(r => r >= 100).length

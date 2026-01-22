@@ -22,12 +22,19 @@ export default defineEventHandler(async (event) => {
     const decodedToken = await firebaseAuth.verifyIdToken(idToken)
 
     const userRepository = new UserRepository()
-    const dbUser = await userRepository.findByFirebaseId(decodedToken.uid)
+    const dbUser = await userRepository.findByFirebaseIdForAuth(decodedToken.uid)
 
     if (!dbUser) {
       throw createError({
         statusCode: 404,
         message: 'User not found in database'
+      })
+    }
+
+    if (dbUser.deletedAt) {
+      throw createError({
+        statusCode: 403,
+        message: 'User account has been deleted'
       })
     }
 

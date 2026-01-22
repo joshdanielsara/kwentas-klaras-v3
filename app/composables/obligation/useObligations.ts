@@ -1,6 +1,7 @@
 import type { IObligation } from '~/types/obligation/obligation'
 import type { ObligationStatus } from '~/constants/obligation/status'
 import { useAuthHeaders } from '../auth/useAuthHeaders'
+import { useDashboardStore } from '~/stores/dashboardStore'
 
 export const useObligations = () => {
   const obligations = ref<IObligation[]>([])
@@ -66,6 +67,8 @@ export const useObligations = () => {
 
       if (response.success) {
         obligations.value.push(response.obligation)
+        const dashboardStore = useDashboardStore()
+        dashboardStore.refresh()
         return response.obligation
       }
     } catch (err: any) {

@@ -246,13 +246,43 @@ export class ProjectService {
     return serializedProject;
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId?: string) {
     const project = await this.repo.findById(id);
     if (!project) {
       throw new Error('Project not found');
     }
 
     await this.repo.deleteById(id);
+
+    await this.activityService.create({
+      projectId: id,
+      action: 'deleted',
+      description: `Project <strong>"${project.name}"</strong> was deleted`,
+      userId: userId,
+    });
+
     return { success: true, message: 'Project deleted successfully' };
+  }
+
+  async restore(id: string, userId?: string) {
+    const project = await this.repo.findUnique({ id });
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    if (!project.deletedAt) {
+      throw new Error('Project is not deleted');
+    }
+
+    await this.repo.restoreById(id);
+
+    await this.activityService.create({
+      projectId: id,
+      action: 'restored',
+      description: `Project <strong>"${project.name}"</strong> was restored`,
+      userId: userId,
+    });
+
+    return { success: true, message: 'Project restored successfully' };
   }
 }

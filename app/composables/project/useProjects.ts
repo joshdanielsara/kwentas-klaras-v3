@@ -2,6 +2,7 @@ import type { Project } from '~/types/project/project'
 import { calculateProjectStats } from '~/constants/project/projectStats'
 import { useErrorHandler } from '../error/useErrorHandler'
 import { useAuthHeaders } from '../auth/useAuthHeaders'
+import { useDashboardStore } from '~/stores/dashboardStore'
 
 export const useProjects = () => {
   const projects = ref<Project[]>([])
@@ -64,6 +65,8 @@ export const useProjects = () => {
 
       if (response.success) {
         projects.value.push(response.project)
+        const dashboardStore = useDashboardStore()
+        dashboardStore.refresh()
         return response.project
       }
     }, {
@@ -92,6 +95,8 @@ export const useProjects = () => {
         if (index !== -1) {
           projects.value[index] = response.project
         }
+        const dashboardStore = useDashboardStore()
+        dashboardStore.refresh()
         return response.project
       }
     }, {
@@ -116,6 +121,8 @@ export const useProjects = () => {
 
       if (response.success) {
         projects.value = projects.value.filter(p => p.id !== projectId)
+        const dashboardStore = useDashboardStore()
+        dashboardStore.refresh()
       }
     }, {
       defaultMessage: 'Failed to delete project',

@@ -3,7 +3,7 @@
     <AdminSidebar />
     
     <main class="flex-1 flex flex-col overflow-hidden">
-      <div :class="[...animations.pageContainerClasses.value]" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-brand-bg">
+      <div ref="scrollContainer" :class="[...animations.pageContainerClasses.value]" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-brand-bg">
         <div class="space-y-6 min-h-full flex flex-col">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -52,7 +52,21 @@
                   :title="'Projects from before ' + new Date().getFullYear()"
                 >
                   Continuing Projects
-              </button>
+                </button>
+                <button
+                  @click="handleFilterChange(PROJECT_FILTER_TYPES.DELETED)"
+                  :disabled="filteringLoading"
+                  :class="[
+                    'px-4 py-2 text-sm font-medium rounded-md transition-colors',
+                    filterType === PROJECT_FILTER_TYPES.DELETED
+                      ? 'bg-white text-red-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900',
+                    filteringLoading ? 'opacity-50 cursor-not-allowed' : ''
+                  ]"
+                  title="View deleted projects"
+                >
+                  Deleted Projects
+                </button>
               </div>
               <div class="flex-1 sm:max-w-md sm:ml-4">
                 <SearchInput
@@ -109,9 +123,9 @@
 
           <section class="relative overflow-hidden rounded-2xl border border-gray-300 p-6 bg-white flex-1 min-h-[600px] flex flex-col">
 
-            <ProjectsListSkeleton v-if="showLoading || filteringLoading" />
+            <ProjectsListSkeleton v-if="showLoading || (filterType === PROJECT_FILTER_TYPES.DELETED && deletedProjectsComposable.loading.value) || filteringLoading || pagination.isChangingPage.value" />
 
-            <div v-else-if="!filteringLoading && filteredProjects.length === 0" class="text-center py-12 flex-1 flex items-center justify-center">
+            <div v-else-if="!filteringLoading && !pagination.isChangingPage.value && filteredProjects.length === 0" class="text-center py-12 flex-1 flex items-center justify-center">
               <div class="text-gray-400 mb-2">
                 <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -121,16 +135,19 @@
               <p class="text-sm text-gray-500 mt-1">Try adjusting your search criteria.</p>
             </div>
 
-            <TransitionGroup v-else-if="!filteringLoading" name="list" tag="div" class="space-y-3 flex-1">
+            <TransitionGroup v-else-if="!filteringLoading && !pagination.isChangingPage.value" name="list" tag="div" class="space-y-3 flex-1">
               <div
-                v-for="(project, index) in filteredProjects"
+                v-for="(project, index) in paginatedProjects"
                 :key="project.id"
                 :class="[
                   'animate-card-fade-in',
                   'will-change-all',
                   animations.getStaggeredDelayClass(index, { maxItems: 10 }),
+                  'project-card rounded-xl p-4 sm:p-5 hover:shadow-md transition-all duration-200',
+                  filterType === PROJECT_FILTER_TYPES.DELETED 
+                    ? 'bg-white border border-gray-300 hover:border-gray-400' 
+                    : 'bg-white border border-gray-200 hover:border-blue-300'
                 ]"
-                class="project-card bg-white border border-gray-200 rounded-xl p-4 sm:p-5 hover:shadow-md hover:border-blue-300 transition-all duration-200"
               >
                 <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
                   <div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
@@ -142,7 +159,10 @@
                     <div class="min-w-0 flex-1">
                       <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-1">
                         <h3 class="text-base sm:text-lg font-bold text-gray-900 truncate">{{ project.name }}</h3>
-                        <span v-if="project.code" class="px-2 py-0.5 inline-flex text-xs font-semibold rounded-full bg-gray-100 text-gray-700 self-start">
+                        <span v-if="filterType === PROJECT_FILTER_TYPES.DELETED" class="px-2 py-0.5 inline-flex text-xs font-semibold rounded-full bg-red-100 text-red-700">
+                          Deleted
+                        </span>
+                        <span v-else-if="project.code" class="px-2 py-0.5 inline-flex text-xs font-semibold rounded-full bg-gray-100 text-gray-700 self-start">
                           {{ project.code }}
                         </span>
                       </div>
@@ -166,7 +186,7 @@
                           +₱{{ formatNumber(project.totalAddedBudget) }} added
                         </span>
                       </div>
-                      <div class="mt-4 pt-4 border-t border-gray-100">
+                      <div v-if="filterType !== PROJECT_FILTER_TYPES.DELETED" class="mt-4 pt-4 border-t border-gray-100">
                         <button
                           @click.stop="toggleFinancialInfo(project.id!)"
                           class="flex items-center justify-start gap-1.5 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors w-full text-left pl-0"
@@ -228,7 +248,13 @@
                     </div>
                   </div>
                   <div class="flex items-center gap-2 flex-shrink-0 self-start sm:self-center">
-                    <button @click.stop="goToProject(project)" class="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm w-full sm:w-auto">
+                    <button v-if="filterType === PROJECT_FILTER_TYPES.DELETED && canManageProjects" @click.stop="handleRestoreClick(project)" class="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Restore
+                    </button>
+                    <button v-else @click.stop="goToProject(project)" class="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm w-full sm:w-auto">
                       View Project
                     </button>
                   </div>
@@ -236,11 +262,16 @@
               </div>
             </TransitionGroup>
 
-            <div v-if="!loading && !filteringLoading && filteredProjects.length > 0" class="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
-              <div class="text-sm text-gray-600">
-                Showing <span class="font-bold text-gray-900">{{ filteredProjects.length }}</span> of <span class="font-bold text-gray-900">{{ projects.length }}</span> projects
-              </div>
-            </div>
+            <Pagination
+              v-if="!loading && !filteringLoading && !pagination.isChangingPage.value && filteredProjects.length > 0"
+              :current-page="pagination.currentPage.value"
+              :total-pages="pagination.totalPages.value"
+              :total-items="filteredProjects.length"
+              :items-per-page="pagination.itemsPerPage"
+              @previous="pagination.previousPage"
+              @next="pagination.nextPage"
+              @go-to-page="pagination.goToPage"
+            />
           </section>
         </div>
       </div>
@@ -249,6 +280,18 @@
     <div v-if="saveError" class="fixed top-4 right-4 z-[10000]">
       <ErrorMessage :message="saveError" />
     </div>
+
+    <ConfirmModal
+      :is-open="showRestoreModal"
+      :title="MODAL_MESSAGES.RESTORE_PROJECT.title"
+      :message="restoreModalMessage"
+      :confirm-text="MODAL_MESSAGES.RESTORE_PROJECT.confirmText"
+      :cancel-text="MODAL_MESSAGES.RESTORE_PROJECT.cancelText"
+      :loading="restoreLoading"
+      :loading-text="MODAL_MESSAGES.RESTORE_PROJECT.loadingText"
+      @confirm="onConfirmRestore"
+      @cancel="closeRestoreModal"
+    />
   </div>
 </template>
 
@@ -256,9 +299,13 @@
 import StatCard from '~/components/ui/StatCard.vue'
 import SearchInput from '~/components/ui/SearchInput.vue'
 import ErrorMessage from '~/components/ui/ErrorMessage.vue'
+import ConfirmModal from '~/components/ui/ConfirmModal.vue'
 import ProjectsListSkeleton from '~/components/skeletons/admin/projects/ProjectsListSkeleton.vue'
+import { MODAL_MESSAGES } from '~/constants/ui/modalMessages'
 import { useProjects } from '~/composables/project/useProjects'
 import { useProjectSearch } from '~/composables/project/useProjectSearch'
+import { useDeletedProjects } from '~/composables/project/useDeletedProjects'
+import { useErrorHandler } from '~/composables/error/useErrorHandler'
 import { useProjectFormatting } from '~/composables/project/useProjectFormatting'
 import { useProjectListActions } from '~/composables/project/useProjectListActions'
 import { useProjectFinancials } from '~/composables/project/useProjectFinancials'
@@ -268,13 +315,19 @@ import { getIconBgColor } from '~/constants/ui/statColors'
 import { useUserPermissions } from '~/composables/user/useUserPermissions'
 import { useLoadingState } from '~/composables/ui/useLoadingState'
 import { usePageAnimations } from '~/composables/ui/usePageAnimations'
+import { usePagination } from '~/composables/ui/usePagination'
+import Pagination from '~/components/ui/Pagination.vue'
 
 const searchQuery = ref('')
 const filterType = ref<ProjectFilterType>(PROJECT_FILTER_TYPES.ALL)
 const filteringLoading = ref(false)
 
 const { projects, loading, saveError, fetchProjects, projectStats } = useProjects()
+const deletedProjectsComposable = useDeletedProjects()
 const { canManageProjects } = useUserPermissions()
+
+const fetchDeletedProjects = deletedProjectsComposable.fetchDeletedProjects
+const restoreProject = deletedProjectsComposable.restoreProject
 
 const { showLoading, markAsLoaded } = useLoadingState(loading)
 const animations = usePageAnimations()
@@ -289,6 +342,9 @@ const pageTitle = computed(() => {
   if (filterType.value === PROJECT_FILTER_TYPES.CONTINUING) {
     return 'Continuing Projects'
   }
+  if (filterType.value === PROJECT_FILTER_TYPES.DELETED) {
+    return 'Deleted Projects'
+  }
   return 'All Projects'
 })
 
@@ -300,14 +356,23 @@ const pageDescription = computed(() => {
   if (filterType.value === PROJECT_FILTER_TYPES.CONTINUING) {
     return `Projects from before ${currentYear}`
   }
+  if (filterType.value === PROJECT_FILTER_TYPES.DELETED) {
+    return 'View and restore deleted projects'
+  }
   return 'Manage and track all projects'
 })
 
-const handleFilterChange = (newFilterType: ProjectFilterType) => {
+const handleFilterChange = async (newFilterType: ProjectFilterType) => {
   if (filterType.value === newFilterType || filteringLoading.value) return
 
   filteringLoading.value = true
   filterType.value = newFilterType
+
+  if (newFilterType === PROJECT_FILTER_TYPES.DELETED) {
+    await fetchDeletedProjects()
+  } else {
+    await fetchProjects()
+  }
 
   setTimeout(() => {
     filteringLoading.value = false
@@ -415,7 +480,13 @@ const toggleFinancialInfo = (projectId: string) => {
   toggleFinancialInfoAction(projectId, hasFinancialData)
 }
 
+const { filteredProjects: deletedSearchFiltered } = useProjectSearch(deletedProjectsComposable.projects, searchQuery)
+
 const filteredProjects = computed(() => {
+  if (filterType.value === PROJECT_FILTER_TYPES.DELETED) {
+    return deletedSearchFiltered.value
+  }
+
   if (filterType.value === PROJECT_FILTER_TYPES.ALL) {
     return searchFilteredProjects.value
   }
@@ -436,6 +507,63 @@ const filteredProjects = computed(() => {
     return true
   })
 })
+
+const scrollContainer = ref<HTMLElement | null>(null)
+const pagination = usePagination(filteredProjects, 10)
+const paginatedProjects = computed(() => pagination.paginatedItems.value)
+
+const scrollToTop = () => {
+  if (scrollContainer.value) {
+    scrollContainer.value.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+
+watch(() => pagination.currentPage.value, () => {
+  scrollToTop()
+})
+
+watch(filteredProjects, () => {
+  pagination.reset()
+})
+
+const showRestoreModal = ref(false)
+const restoreLoading = ref(false)
+const projectToRestore = ref<Project | null>(null)
+const restoreModalMessage = computed(() => {
+  if (projectToRestore.value) {
+    return `Are you sure you want to restore "${projectToRestore.value.name}"?`
+  }
+  return MODAL_MESSAGES.RESTORE_PROJECT.message
+})
+
+const handleRestoreClick = (project: Project) => {
+  if (!project.id) return
+  projectToRestore.value = project
+  showRestoreModal.value = true
+}
+
+const closeRestoreModal = () => {
+  showRestoreModal.value = false
+  projectToRestore.value = null
+}
+
+const onConfirmRestore = async () => {
+  if (!projectToRestore.value?.id) return
+  
+  restoreLoading.value = true
+  await useErrorHandler(async () => {
+    await restoreProject(projectToRestore.value!.id!)
+    if (filterType.value === PROJECT_FILTER_TYPES.DELETED) {
+      await fetchDeletedProjects()
+    } else {
+      await fetchProjects()
+    }
+    closeRestoreModal()
+  }, {
+    defaultMessage: 'Failed to restore project',
+  })
+  restoreLoading.value = false
+}
 
 onMounted(async () => {
   await fetchProjects()

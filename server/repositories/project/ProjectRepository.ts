@@ -15,7 +15,8 @@ export class ProjectRepository implements IProjectRepository {
 
   async findAll(): Promise<Project[]> {
     const projects = await this.client.project.findMany();
-    return projects.sort((a, b) => {
+    const activeProjects = projects.filter(project => !project.deletedAt);
+    return activeProjects.sort((a, b) => {
       if (!a.createdAt && !b.createdAt) return a.name.localeCompare(b.name);
       if (!a.createdAt) return 1;
       if (!b.createdAt) return -1;
@@ -24,7 +25,12 @@ export class ProjectRepository implements IProjectRepository {
   }
 
   async findById(id: string): Promise<Project | null> {
-    return this.client.project.findUnique({ where: { id } });
+    const project = await this.client.project.findUnique({ where: { id } });
+    return project && !project.deletedAt ? project : null;
+  }
+
+  async findUnique(args: { where: { id: string } }): Promise<Project | null> {
+    return this.client.project.findUnique(args);
   }
 
   async updateById(id: string, update: Prisma.ProjectUpdateInput): Promise<Project> {
@@ -32,6 +38,26 @@ export class ProjectRepository implements IProjectRepository {
   }
 
   async deleteById(id: string): Promise<Project> {
-    return this.client.project.delete({ where: { id } });
+    return this.client.project.update({
+      where: { id },
+      data: { deletedAt: new Date() }
+    });
+  }
+
+  async findDeleted(): Promise<Project[]> {
+    const projects = await this.client.project.findMany();
+    const deletedProjects = projects.filter(project => project.deletedAt !== null);
+    return deletedProjects.sort((a, b) => {
+      const aTime = a.deletedAt?.getTime() ?? 0;
+      const bTime = b.deletedAt?.getTime() ?? 0;
+      return bTime - aTime;
+    });
+  }
+
+  async restoreById(id: string): Promise<Project> {
+    return this.client.project.update({
+      where: { id },
+      data: { deletedAt: null }
+    });
   }
 }

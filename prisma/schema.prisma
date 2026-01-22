@@ -1,6 +1,6 @@
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "darwin-arm64", "darwin-x64", "rhel-openssl-3.0.x"]
+  binaryTargets = ["native", "darwin-arm64", "darwin", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
@@ -21,10 +21,12 @@ model User {
   joined     DateTime?
   createdAt  DateTime? @map("created_at")
   updatedAt  DateTime? @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
 
   @@index([department])
   @@index([status])
   @@index([role])
+  @@index([deletedAt])
   @@map("users")
 }
 
@@ -80,6 +82,7 @@ model Project {
   longitude        Float?
   createdAt        DateTime? @default(now()) @map("created_at")
   updatedAt        DateTime? @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
 
   @@index([name])
   @@index([implementingUnit])
@@ -87,6 +90,7 @@ model Project {
   @@index([year])
   @@index([startDate])
   @@index([endDate])
+  @@index([deletedAt])
   @@map("projects")
 }
 

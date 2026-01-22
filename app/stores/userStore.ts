@@ -1,4 +1,5 @@
 import type { User } from '~/types/user/user'
+import { useDashboardStore } from './dashboardStore'
 
 export const useUserStore = () => {
   const users = ref<User[]>([])
@@ -50,6 +51,8 @@ export const useUserStore = () => {
 
       if (response.success) {
         users.value.push(response.user)
+        const dashboardStore = useDashboardStore()
+        dashboardStore.refresh()
         return response.user
       }
     } catch (err: any) {
@@ -75,6 +78,8 @@ export const useUserStore = () => {
         if (index !== -1) {
           users.value[index] = response.user
         }
+        const dashboardStore = useDashboardStore()
+        dashboardStore.refresh()
         return response.user
       }
     } catch (err: any) {
@@ -96,6 +101,8 @@ export const useUserStore = () => {
 
       if (response.success) {
         users.value = users.value.filter(u => u.id !== userId)
+        const dashboardStore = useDashboardStore()
+        dashboardStore.refresh()
       }
     } catch (err: any) {
       error.value = err?.message || 'Failed to delete user'
