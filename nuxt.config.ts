@@ -39,35 +39,6 @@ export default defineNuxtConfig({
   vite: {
     build: {
       chunkSizeWarningLimit: 600,
-      rollupOptions: {
-        output: {
-          manualChunks: (id) => {
-            if (id.includes('node_modules')) {
-              if (id.includes('apexcharts') || id.includes('vue3-apexcharts')) {
-                return 'apexcharts'
-              }
-              if (id.includes('leaflet') || id.includes('@vue-leaflet')) {
-                return 'leaflet'
-              }
-              if (id.includes('firebase')) {
-                return 'firebase'
-              }
-              if (id.includes('exceljs') || id.includes('xlsx')) {
-                return 'excel'
-              }
-              if (id.includes('jspdf')) {
-                return 'pdf'
-              }
-              if (id.includes('@nuxt/ui') || id.includes('@headlessui')) {
-                return 'ui'
-              }
-              if (id.includes('vue') && !id.includes('node_modules/vue/')) {
-                return 'vue-vendor'
-              }
-            }
-          },
-        },
-      },
     },
   },
 
@@ -101,6 +72,9 @@ export default defineNuxtConfig({
     compressPublicAssets: true,
     minify: true,
     sourceMap: false,
+    prerender: {
+      crawlLinks: false,
+    },
   },
 
   css: ['~/assets/css/main.css', 'leaflet/dist/leaflet.css'],

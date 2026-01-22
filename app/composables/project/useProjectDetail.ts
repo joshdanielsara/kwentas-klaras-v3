@@ -8,7 +8,6 @@ import { useProjectTimeline } from './useProjectTimeline'
 import { PROJECT_DETAIL_TABS } from '~/constants/project/detailTabs'
 import { AUDIT_LOG_STATUS_CLASSES, AUDIT_LOG_TITLES, getAuditLogDescription } from '~/constants/project/auditLogs'
 import { useErrorHandler } from '../error/useErrorHandler'
-import * as XLSX from 'xlsx'
 import { stripHtmlTags } from '~/utils/htmlUtils'
 
 export const useProjectDetail = (projectId: string) => {
@@ -256,6 +255,7 @@ export const useProjectDetail = (projectId: string) => {
   const exportLogsToExcel = async () => {
     if (auditLogs.value.length === 0) return
 
+    const XLSX = await import('xlsx')
     const workbook = XLSX.utils.book_new()
     
     const excelData = auditLogs.value.map((log, index) => {
