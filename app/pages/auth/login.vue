@@ -14,7 +14,6 @@
               placeholder="stanley@gmail.com"
               required
             />
-            <p v-if="errors.email" class="text-sm text-red-600">{{ errors.email }}</p>
           </div>
           <div class="space-y-2">
             <div class="relative">
@@ -40,7 +39,6 @@
                 </svg>
               </button>
             </div>
-            <p v-if="errors.password" class="text-sm text-red-600">{{ errors.password }}</p>
           </div>
           <div class="flex items-center justify-between">
             <div class="flex items-center">
@@ -59,9 +57,6 @@
                 Forgot Password?
               </a>
             </div>
-          </div>
-          <div v-if="error" class="mt-4">
-            <ErrorMessage :message="error" />
           </div>
           <div class="mt-6">
             <button
@@ -85,40 +80,50 @@
       <div class="absolute inset-0 bg-brand-blue opacity-20 z-10"></div>
       <img src="/images/loginlogo.jpg" alt="Municipality of Boljoon Logo" class="w-full h-full object-cover relative z-20" />
     </div>
+
+    <SuccessModal
+      :show="showSuccessModal"
+      title="Login Successful"
+      message="You have successfully logged in. Redirecting to dashboard..."
+      button-text="Continue"
+      :auto-close-seconds="2"
+      @close="closeSuccessModal"
+    />
+
+    <ErrorModal
+      :show="showErrorModal"
+      title="Login Failed"
+      :message="errorMessage"
+      button-text="Try Again"
+      :auto-close-seconds="0"
+      @close="closeErrorModal"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useLogin } from '~/composables/auth/useLogin'
+import SuccessModal from '~/components/ui/SuccessModal.vue'
+import ErrorModal from '~/components/ui/ErrorModal.vue'
 
 definePageMeta({
   layout: false,
 })
 
-const { form, loading, error, showPassword, handleLogin, togglePasswordVisibility } = useLogin()
-
-const errors = ref<{ email?: string; password?: string }>({})
-
-const validateForm = (): boolean => {
-  errors.value = {}
-  
-  if (!form.email) {
-    errors.value.email = 'Email is required'
-  } else if (!/\S+@\S+\.\S+/.test(form.email)) {
-    errors.value.email = 'Email is invalid'
-  }
-  
-  if (!form.password) {
-    errors.value.password = 'Password is required'
-  } else if (form.password.length < 8) {
-    errors.value.password = 'Password must be at least 8 characters'
-  }
-  
-  return Object.keys(errors.value).length === 0
-}
+const { 
+  form, 
+  loading, 
+  showPassword, 
+  showSuccessModal,
+  showErrorModal,
+  errorMessage,
+  handleLogin, 
+  togglePasswordVisibility,
+  closeSuccessModal,
+  closeErrorModal,
+} = useLogin()
 
 const handleSubmit = async () => {
-  if (!validateForm()) return
   await handleLogin()
 }
 </script>
