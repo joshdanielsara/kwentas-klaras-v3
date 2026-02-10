@@ -11,18 +11,46 @@ export const useLogin = () => {
     password: '',
   })
 
+  const INVALID_CREDENTIALS_MESSAGE = 'Invalid Email or Password, Please try again'
+  const GENERIC_LOGIN_FAILED_MESSAGE = 'Login failed. Please try again.'
+
   const loading = ref(false)
   const error = ref('')
   const showPassword = ref(false)
+  const showSuccessModal = ref(false)
+  const showErrorModal = ref(false)
+  const errorMessage = ref('')
   const authStore = useAuthStore()
+
+  const getSafeLoginErrorMessage = (rawMessage: string): string => {
+    const msg = (rawMessage || '').toLowerCase()
+
+    const isCredentialError =
+      msg.includes('auth/invalid-credential') ||
+      msg.includes('auth/wrong-password') ||
+      msg.includes('auth/user-not-found') ||
+      msg.includes('auth/invalid-login-credentials') ||
+      msg.includes('invalid email or password') ||
+      msg.includes('user not found in database') ||
+      msg.includes('invalid id token')
+
+    if (isCredentialError) {
+      return INVALID_CREDENTIALS_MESSAGE
+    }
+
+    return GENERIC_LOGIN_FAILED_MESSAGE
+  }
 
   const handleLogin = async () => {
     error.value = ''
     loading.value = true
+    showErrorModal.value = false
 
     const validationError = validateLoginForm(form)
     if (validationError) {
       error.value = validationError
+      errorMessage.value = validationError
+      showErrorModal.value = true
       loading.value = false
       return
     }
@@ -39,14 +67,18 @@ export const useLogin = () => {
 
       if (response.success && response.user) {
         authStore.setUser(response.user)
-        await navigateTo('/admin')
+        showSuccessModal.value = true
+        loading.value = false
       }
 
       loading.value = false
     }, {
-      defaultMessage: 'Invalid email or password. Please try again.',
+      defaultMessage: INVALID_CREDENTIALS_MESSAGE,
       onError: (err) => {
-        error.value = err.message
+        const safeMessage = getSafeLoginErrorMessage(err.message)
+        error.value = safeMessage
+        errorMessage.value = safeMessage
+        showErrorModal.value = true
         loading.value = false
       }
     })
@@ -56,13 +88,27 @@ export const useLogin = () => {
     showPassword.value = !showPassword.value
   }
 
+  const closeSuccessModal = async () => {
+    showSuccessModal.value = false
+    await navigateTo('/admin')
+  }
+
+  const closeErrorModal = () => {
+    showErrorModal.value = false
+  }
+
   return {
     form,
     loading,
     error,
     showPassword,
+    showSuccessModal,
+    showErrorModal,
+    errorMessage,
     handleLogin,
     togglePasswordVisibility,
+    closeSuccessModal,
+    closeErrorModal,
   }
 }
 
