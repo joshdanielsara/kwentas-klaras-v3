@@ -19,8 +19,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { STAT_ICONS, ACTION_ICONS, NAVIGATION_ICONS } from '~/constants/ui/icons'
-import type { StatIconKey, ActionIconKey, NavigationIconKey } from '~/constants/ui/icons'
+import { STAT_ICONS, ACTION_ICONS, NAVIGATION_ICONS } from '../../constants/ui/icons'
+import type { StatIconKey, ActionIconKey, NavigationIconKey } from '../../constants/ui/icons'
 
 interface IconProps {
   name: StatIconKey | ActionIconKey | NavigationIconKey

@@ -9,7 +9,10 @@ export const validateLoginForm = (form: LoginForm): string | null => {
     return 'Password is required'
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  // Email validation: requires at least 2 characters for TLD
+  // Accepts: example.co, example.com, example.com.ph
+  // Rejects: example.c (single character TLD)
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}(\.[^\s@]{2,})*$/
   if (!emailRegex.test(form.email)) {
     return 'Please enter a valid email address'
   }
