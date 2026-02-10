@@ -39,8 +39,8 @@
 </template>
 
 <script setup lang="ts">
-import type { SubmitButtonProps } from '~/types/ui/submitButton'
-import { useSubmitButton } from '~/composables/ui/useSubmitButton'
+import type { SubmitButtonProps } from '../../types/ui/submitButton'
+import { useSubmitButton } from '../../composables/ui/useSubmitButton'
 
 const props = withDefaults(defineProps<SubmitButtonProps>(), {
   loading: false,
