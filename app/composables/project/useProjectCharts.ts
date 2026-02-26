@@ -125,7 +125,7 @@ export const useProjectCharts = (
 
     const series = utilized > 0
       ? [Math.max(0.01, utilizationRate), Math.min(99.99, availableRate)]
-      : [0, 100]
+      : [availableRate]
 
     return {
       series,
@@ -134,8 +134,8 @@ export const useProjectCharts = (
           type: 'pie',
           height: 350,
         },
-        colors: utilized > 0 ? ['#10B981', '#E5E7EB'] : ['#E5E7EB', '#E5E7EB'],
-        labels: ['Utilized', 'Available'],
+        colors: utilized > 0 ? ['#10B981', '#E5E7EB'] : ['#E5E7EB'],
+        labels: utilized > 0 ? ['Utilized', 'Available'] : ['Available'],
         legend: {
           position: 'bottom',
         },
