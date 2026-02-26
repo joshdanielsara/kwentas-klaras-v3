@@ -122,10 +122,6 @@
                 </div>
               </div>
 
-              <div v-if="error" class="mt-4">
-                <ErrorMessage :message="error" />
-              </div>
-
               <div class="flex items-center justify-end space-x-4 pt-4">
                 <Button
                   variant="secondary"
@@ -180,16 +176,25 @@
       count-down-message="Closing in"
       @close="handleSuccessClose"
     />
+
+    <ErrorModal
+      :show="showErrorModal"
+      title="Failed to Add Obligation"
+      :message="errorMessage"
+      button-text="Close"
+      :auto-close-seconds="0"
+      @close="closeErrorModal"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import Button from '~/components/ui/Button.vue'
-import ErrorMessage from '~/components/ui/ErrorMessage.vue'
 import CurrencyInput from '~/components/ui/CurrencyInput.vue'
 import ConfirmModal from '~/components/ui/ConfirmModal.vue'
 import SuccessModal from '~/components/ui/SuccessModal.vue'
 import LoadingModal from '~/components/ui/LoadingModal.vue'
+import ErrorModal from '~/components/ui/ErrorModal.vue'
 import { useObligationForm } from '~/composables/obligation/useObligationForm'
 import { usePageAnimations } from '~/composables/ui/usePageAnimations'
 import { useFormModals } from '~/composables/ui/useFormModals'
@@ -211,6 +216,20 @@ const {
   startSubmission,
   closeSuccessModal,
 } = useFormModals()
+
+const showErrorModal = ref(false)
+const errorMessage = ref('')
+
+const closeErrorModal = () => {
+  showErrorModal.value = false
+}
+
+watch(error, (newVal, oldVal) => {
+  if (newVal && newVal !== oldVal) {
+    errorMessage.value = newVal
+    showErrorModal.value = true
+  }
+})
 
 const handleAddClick = () => {
   if (isFormValid.value) {

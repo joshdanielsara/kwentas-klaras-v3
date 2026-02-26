@@ -109,10 +109,6 @@
                 </div>
               </div>
 
-              <div v-if="error" class="rounded-lg bg-red-50 border border-red-200 p-3">
-                <p class="text-sm text-red-800">{{ error }}</p>
-              </div>
-
               <div class="flex items-center justify-end space-x-3 pt-4">
                 <button
                   type="button"
@@ -142,9 +138,19 @@
       </div>
     </div>
   </Teleport>
+
+  <ErrorModal
+    :show="showErrorModal"
+    title="Failed to Add Obligation"
+    :message="error"
+    button-text="Close"
+    :auto-close-seconds="0"
+    @close="closeErrorModal"
+  />
 </template>
 
 <script setup lang="ts">
+import ErrorModal from '~/components/ui/ErrorModal.vue'
 interface Props {
   isOpen: boolean
   projectId: string
@@ -171,6 +177,7 @@ const form = ref({
 
 const error = ref('')
 const loading = ref(false)
+const showErrorModal = ref(false)
 
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {
@@ -189,11 +196,16 @@ const resetForm = () => {
     approvedDate: ''
   }
   error.value = ''
+  showErrorModal.value = false
 }
 
 const closeModal = () => {
   resetForm()
   emit('close')
+}
+
+const closeErrorModal = () => {
+  showErrorModal.value = false
 }
 
 const handleSubmit = async () => {
@@ -204,18 +216,21 @@ const handleSubmit = async () => {
     if (!form.value.amount || form.value.amount <= 0) {
       error.value = 'Amount must be greater than 0'
       loading.value = false
+      showErrorModal.value = true
       return
     }
 
     if (!form.value.payee.trim()) {
       error.value = 'Payee is required'
       loading.value = false
+      showErrorModal.value = true
       return
     }
 
     if (!form.value.reason.trim()) {
       error.value = 'Reason is required'
       loading.value = false
+      showErrorModal.value = true
       return
     }
 
@@ -233,6 +248,7 @@ const handleSubmit = async () => {
     closeModal()
   } catch (err: any) {
     error.value = err?.message || 'An error occurred. Please try again.'
+    showErrorModal.value = true
   } finally {
     loading.value = false
   }
