@@ -17,7 +17,6 @@ export const useLogin = () => {
   const loading = ref(false)
   const error = ref('')
   const showPassword = ref(false)
-  const showSuccessModal = ref(false)
   const showErrorModal = ref(false)
   const errorMessage = ref('')
   const authStore = useAuthStore()
@@ -67,8 +66,9 @@ export const useLogin = () => {
 
       if (response.success && response.user) {
         authStore.setUser(response.user)
-        showSuccessModal.value = true
         loading.value = false
+        await navigateTo('/admin')
+        return
       }
 
       loading.value = false
@@ -88,11 +88,6 @@ export const useLogin = () => {
     showPassword.value = !showPassword.value
   }
 
-  const closeSuccessModal = async () => {
-    showSuccessModal.value = false
-    await navigateTo('/admin')
-  }
-
   const closeErrorModal = () => {
     showErrorModal.value = false
   }
@@ -102,12 +97,10 @@ export const useLogin = () => {
     loading,
     error,
     showPassword,
-    showSuccessModal,
     showErrorModal,
     errorMessage,
     handleLogin,
     togglePasswordVisibility,
-    closeSuccessModal,
     closeErrorModal,
   }
 }

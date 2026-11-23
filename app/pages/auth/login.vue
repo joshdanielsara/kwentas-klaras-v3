@@ -81,15 +81,6 @@
       <img src="/images/loginlogo.jpg" alt="Municipality of Boljoon Logo" class="w-full h-full object-cover relative z-20" />
     </div>
 
-    <SuccessModal
-      :show="showSuccessModal"
-      title="Login Successful"
-      message="You have successfully logged in. Redirecting to dashboard..."
-      button-text="Continue"
-      :auto-close-seconds="2"
-      @close="closeSuccessModal"
-    />
-
     <ErrorModal
       :show="showErrorModal"
       title="Login Failed"
@@ -103,7 +94,6 @@
 
 <script setup lang="ts">
 import { useLogin } from '~/composables/auth/useLogin'
-import SuccessModal from '~/components/ui/SuccessModal.vue'
 import ErrorModal from '~/components/ui/ErrorModal.vue'
 
 definePageMeta({
@@ -114,12 +104,10 @@ const {
   form, 
   loading, 
   showPassword, 
-  showSuccessModal,
   showErrorModal,
   errorMessage,
   handleLogin, 
   togglePasswordVisibility,
-  closeSuccessModal,
   closeErrorModal,
 } = useLogin()
 
