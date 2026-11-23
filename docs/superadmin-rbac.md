@@ -48,6 +48,7 @@ FE filters `ADMIN_MENU` via `useAdminNavPermissions`; `auth.global` redirects aw
 | Obligations | `read:Obligation` | `create:Obligation` (Add Obligation) |
 | Disbursements | `read:Disbursement` | `create:Disbursement` (Add Disbursement) |
 | Logs | `read:ProjectLog` | `export:ProjectLog` (Export to Excel) |
+| Integrity | `read:ProjectIntegrity` | Check sealed activity history (same public verify) |
 | Documents | `read:Document` | `create:Document` (Add Document) |
 | Project Map | `read:ProjectMap` | `update:ProjectMap` (Save), `delete:ProjectMap` (Clear Location) |
 
@@ -65,6 +66,10 @@ npm run seed:roles-permissions
 2. `GET /api/superadmin/auth/me` — session check
 3. `POST /api/superadmin/auth/logout` — clears cookie
 4. All `/api/superadmin/**` mutating routes use `requireSuperadmin` + CSRF (CSRF accepts municipal `session_token` or `superadmin_session`)
+
+## Public display
+
+Superadmin menu **Public display** configures the home-page carousel auto-advance interval. See `docs/public-carousel-settings.md`.
 
 UI:
 

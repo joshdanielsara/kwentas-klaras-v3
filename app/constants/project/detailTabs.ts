@@ -6,6 +6,7 @@ export const PROJECT_DETAIL_TABS = [
   { id: 'obligations', label: 'Obligations' },
   { id: 'disbursements', label: 'Disbursements' },
   { id: 'logs', label: 'Logs' },
+  { id: 'integrity', label: 'Integrity' },
   { id: 'documents', label: 'Documents' },
   { id: 'map', label: 'Project Map' },
 ] as const
@@ -20,6 +21,7 @@ export const TAB_IDS = {
   OBLIGATIONS: 'obligations',
   DISBURSEMENTS: 'disbursements',
   LOGS: 'logs',
+  INTEGRITY: 'integrity',
   DOCUMENTS: 'documents',
   MAP: 'map',
 } as const

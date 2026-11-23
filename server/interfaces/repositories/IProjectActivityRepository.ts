@@ -7,9 +7,18 @@ export interface IProjectActivityRepository {
     description: string
     userId?: string
     metadata?: string
+    integrityHash?: string
+    createdAt?: Date
   }): Promise<ProjectActivity>
   findByProjectId(projectId: string): Promise<ProjectActivity[]>
+  findByBatchId(batchId: string): Promise<ProjectActivity[]>
   findRecent(limit: number): Promise<ProjectActivity[]>
   findAll(): Promise<ProjectActivity[]>
+  findUnbatchedWithHash(): Promise<ProjectActivity[]>
+  assignBatch(
+    activityIds: string[],
+    batchId: string,
+    indexById: Map<string, number>
+  ): Promise<void>
+  updateIntegrityHash(id: string, integrityHash: string): Promise<ProjectActivity>
 }
-

@@ -27,6 +27,7 @@ describe('permissionCatalog', () => {
     assert.ok(keys.includes('create:Disbursement'))
     assert.ok(keys.includes('create:Document'))
     assert.ok(keys.includes('export:ProjectLog'))
+    assert.ok(keys.includes('read:ProjectIntegrity'))
     assert.ok(keys.includes('update:ProjectMap'))
     assert.ok(keys.includes('delete:ProjectMap'))
   })

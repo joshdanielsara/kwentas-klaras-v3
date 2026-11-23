@@ -1,0 +1,3 @@
+export const INTEGRITY_ALTERATIONS_TITLE = 'What changed'
+export const INTEGRITY_ALTERATIONS_SEALED_LABEL = 'Sealed'
+export const INTEGRITY_ALTERATIONS_NOW_LABEL = 'Now'

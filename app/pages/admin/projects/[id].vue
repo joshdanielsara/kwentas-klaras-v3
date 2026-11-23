@@ -884,6 +884,10 @@
               </div>
             </div>
 
+            <div v-else-if="activeTab === TAB_IDS.INTEGRITY" class="space-y-6">
+              <ProjectIntegrityTab :project-id="projectId" />
+            </div>
+
             <div v-else-if="activeTab === TAB_IDS.DOCUMENTS" class="space-y-6">
               <div :class="[...animations.cardClasses.value]" class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
                 <div class="px-6 py-5 border-b border-gray-50">
@@ -961,6 +965,7 @@ import Accordion from '~/components/ui/Accordion.vue'
 import GeotagMap from '~/components/shared/GeotagMap.vue'
 import ConfirmModal from '~/components/ui/ConfirmModal.vue'
 import ProjectDetailSkeleton from '~/components/skeletons/admin/projects/ProjectDetailSkeleton.vue'
+import ProjectIntegrityTab from '~/components/admin/projects/ProjectIntegrityTab.vue'
 import { MODAL_MESSAGES } from '~/constants/ui/modalMessages'
 import { useProjectDetail } from '~/composables/project/useProjectDetail'
 import { useProjectFinancials } from '~/composables/project/useProjectFinancials'

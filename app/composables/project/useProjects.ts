@@ -85,8 +85,10 @@ export const useProjects = () => {
     error.value = null
 
     await useErrorHandler(async () => {
+      const headers = await useAuthHeaders()
       const response = await $fetch<{ success: boolean; project: Project }>(`/api/projects/${projectId}`, {
         method: 'PUT',
+        headers,
         body: projectData,
       })
 
@@ -115,8 +117,10 @@ export const useProjects = () => {
     error.value = null
 
     await useErrorHandler(async () => {
+      const headers = await useAuthHeaders()
       const response = await $fetch<{ success: boolean }>(`/api/projects/${projectId}`, {
         method: 'DELETE',
+        headers,
       })
 
       if (response.success) {

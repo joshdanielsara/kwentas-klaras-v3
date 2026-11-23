@@ -188,6 +188,14 @@ export const DEFAULT_PERMISSION_CATALOG: PermissionSeedItem[] = [
     isSystem: true,
   },
   {
+    key: 'read:ProjectIntegrity',
+    action: 'read',
+    subject: 'ProjectIntegrity',
+    label: 'View Integrity Tab',
+    description: 'View sealed activity integrity and run public-style verification on project details',
+    isSystem: true,
+  },
+  {
     key: 'read:Document',
     action: 'read',
     subject: 'Document',
@@ -294,6 +302,7 @@ export const PROJECT_DETAIL_READ_PERMISSION_KEYS = [
   'read:Obligation',
   'read:Disbursement',
   'read:ProjectLog',
+  'read:ProjectIntegrity',
   'read:Document',
   'read:ProjectMap',
 ] as const

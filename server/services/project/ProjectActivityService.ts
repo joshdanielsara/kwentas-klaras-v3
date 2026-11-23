@@ -1,5 +1,7 @@
 import { ProjectActivityRepository } from '../../repositories/project/ProjectActivityRepository'
 import { ProjectActivitySerializer } from '../../serializers/ProjectActivitySerializer'
+import { hashActivityPayload } from '../../utils/auditIntegrity/hashActivity'
+import { scheduleAuditIntegritySeal } from '../../utils/auditIntegrity/scheduleAuditIntegritySeal'
 
 export class ProjectActivityService {
   private repo: ProjectActivityRepository
@@ -15,7 +17,25 @@ export class ProjectActivityService {
     userId?: string
     metadata?: string
   }) {
-    const activity = await this.repo.create(data)
+    const createdAt = new Date()
+    const integrityHash = hashActivityPayload({
+      projectId: data.projectId,
+      action: data.action,
+      description: data.description,
+      userId: data.userId,
+      metadata: data.metadata,
+      createdAt,
+    })
+
+    const activity = await this.repo.create({
+      ...data,
+      integrityHash,
+      createdAt,
+    })
+
+    // Background OpenTimestamps seal — no manual CLI required
+    scheduleAuditIntegritySeal()
+
     return ProjectActivitySerializer.format(activity)
   }
 
@@ -29,4 +49,3 @@ export class ProjectActivityService {
     return ProjectActivitySerializer.list(activities)
   }
 }
-

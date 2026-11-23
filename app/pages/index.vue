@@ -19,15 +19,15 @@
               <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Kwentas Klaras Digital PMIS</h1>
               <p class="text-base sm:text-lg text-gray-600">Welcome to the Project Management Information System</p>
             </div>
-            <div v-if="!loading && !error && filteredProjects.length > 0" class="flex items-center gap-6 mt-4">
-              <div>
-                <div class="text-sm text-gray-600">Next in</div>
-                <div class="text-xl sm:text-2xl font-bold text-gray-900">{{ Math.ceil(countdown) }}s</div>
-              </div>
-              <div>
-                <div class="text-sm text-gray-600">Remaining</div>
-                <div class="text-xl sm:text-2xl font-bold text-gray-900">{{ remainingProjects }}</div>
-              </div>
+            <div v-if="!loading && !error && filteredProjects.length > 0" class="mt-4">
+              <PublicProjectCarouselControls
+                :can-navigate="canNavigate"
+                :countdown="countdown"
+                :remaining="remainingProjects"
+                :interval-seconds="carouselIntervalSeconds"
+                @previous="previousProject"
+                @next="() => nextProject()"
+              />
             </div>
           </div>
           <div v-if="!loading && !error && projects.length > 0" class="space-y-3">
@@ -254,6 +254,12 @@
                           </span>
                         </div>
 
+                        <PublicProjectIntegrityPanel
+                          v-if="currentProject?.id"
+                          :project-id="currentProject.id"
+                          accordion
+                        />
+
                         <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6">
                           <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
                             <div class="flex gap-3 min-w-0">
@@ -375,11 +381,14 @@
 
 <script setup lang="ts">
 import PieChartSimple from '~/components/ui/PieChartSimple.vue'
+import PublicProjectIntegrityPanel from '~/components/public/ProjectIntegrityPanel.vue'
+import PublicProjectCarouselControls from '~/components/public/ProjectCarouselControls.vue'
 import { useProjects } from '~/composables/project/useProjects'
 import { useProjectFormatting } from '~/composables/project/useProjectFormatting'
 import { useProjectCarousel } from '~/composables/project/useProjectCarousel'
 import { useProjectFilters } from '~/composables/project/useProjectFilters'
 import { useProjectFinancials } from '~/composables/project/useProjectFinancials'
+import { usePublicCarouselSettings } from '~/composables/public/usePublicCarouselSettings'
 import { useLoadingState } from '~/composables/ui/useLoadingState'
 import '~/assets/css/projectCarousel.css'
 
@@ -392,7 +401,22 @@ const { formatNumber } = useProjectFormatting()
 
 const { filters, filteredProjects, uniqueDepartments, uniqueYears, uniqueLocations, uniqueServices, resetFilters } = useProjectFilters(projects)
 
-const { currentIndex, currentProject, countdown, remainingProjects, startAutoPlay, stopAutoPlay } = useProjectCarousel(filteredProjects)
+const {
+  intervalSeconds: carouselIntervalSeconds,
+  fetchCarouselSettings,
+} = usePublicCarouselSettings()
+
+const {
+  currentIndex,
+  currentProject,
+  countdown,
+  remainingProjects,
+  canNavigate,
+  nextProject,
+  previousProject,
+  startAutoPlay,
+  stopAutoPlay,
+} = useProjectCarousel(filteredProjects, carouselIntervalSeconds)
 
 const currentProjectId = computed<string | null>(() => currentProject.value?.id ?? null)
 const {
@@ -448,7 +472,7 @@ onMounted(async () => {
   
   animateProgressBar(randomDelay)
   
-  await fetchProjects()
+  await Promise.all([fetchProjects(), fetchCarouselSettings()])
   
   const elapsedTime = Date.now() - startTime
   const remainingDelay = Math.max(0, randomDelay - elapsedTime)

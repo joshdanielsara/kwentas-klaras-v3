@@ -25,4 +25,11 @@ describe('detailTabPermissions', () => {
     assert.deepEqual(PROJECT_DETAIL_TAB_PERMISSIONS.map.delete, { action: 'delete', subject: 'ProjectMap' })
     assert.deepEqual(PROJECT_DETAIL_TAB_PERMISSIONS.logs.export, { action: 'export', subject: 'ProjectLog' })
   })
+
+  it('requires ProjectIntegrity read for the Integrity tab', () => {
+    assert.deepEqual(PROJECT_DETAIL_TAB_PERMISSIONS.integrity.read, {
+      action: 'read',
+      subject: 'ProjectIntegrity',
+    })
+  })
 })

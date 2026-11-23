@@ -39,6 +39,9 @@ export const PROJECT_DETAIL_TAB_PERMISSIONS: Record<ProjectDetailTabId, ProjectD
     read: { action: 'read', subject: 'ProjectLog' },
     export: { action: 'export', subject: 'ProjectLog' },
   },
+  [TAB_IDS.INTEGRITY]: {
+    read: { action: 'read', subject: 'ProjectIntegrity' },
+  },
   [TAB_IDS.DOCUMENTS]: {
     read: { action: 'read', subject: 'Document' },
     create: { action: 'create', subject: 'Document' },

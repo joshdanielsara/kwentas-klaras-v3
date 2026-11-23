@@ -15,7 +15,8 @@
     "prisma:seed": "npx tsx prisma/seed.ts",
     "seed:roles-permissions": "npx tsx seeders/seedRolesPermissions.ts",
     "seed:catalogs": "npx tsx seeders/seedDepartmentsLocations.ts",
-    "test:unit": "node --import tsx --test app/constants/rbac/__tests__/permissionCatalog.test.ts app/constants/admin/__tests__/adminNavPermissions.test.ts app/constants/project/__tests__/detailTabPermissions.test.ts app/constants/superadmin/__tests__/catalogResources.test.ts app/utils/__tests__/adminNavAccess.test.ts app/utils/catalog/__tests__/normalizeCatalogName.test.ts app/utils/user/__tests__/roleRequiresDepartment.test.ts app/utils/user/__tests__/formatRoleLabel.test.ts server/utils/__tests__/permissionKey.test.ts server/utils/__tests__/roleSlug.test.ts server/utils/__tests__/superadminSessionCrypto.test.ts app/abilities/__tests__/createAbility.test.ts"
+    "seal:audit-batches": "npx tsx seeders/sealAuditBatches.ts",
+    "test:unit": "node --import tsx --test app/constants/rbac/__tests__/permissionCatalog.test.ts app/constants/admin/__tests__/adminNavPermissions.test.ts app/constants/project/__tests__/detailTabPermissions.test.ts app/constants/superadmin/__tests__/catalogResources.test.ts app/utils/__tests__/adminNavAccess.test.ts app/utils/catalog/__tests__/normalizeCatalogName.test.ts app/utils/user/__tests__/roleRequiresDepartment.test.ts app/utils/user/__tests__/formatRoleLabel.test.ts server/utils/auditIntegrity/__tests__/canonicalizeActivity.test.ts server/utils/auditIntegrity/__tests__/merkleTree.test.ts server/utils/auditIntegrity/__tests__/mapPublicIntegrityStatus.test.ts server/utils/auditIntegrity/__tests__/buildPublicIntegrityTimeline.test.ts server/utils/auditIntegrity/__tests__/verifyBatchIntegrity.test.ts server/utils/auditIntegrity/__tests__/canonicalizeProject.test.ts server/utils/auditIntegrity/__tests__/diffProjectIntegritySnapshots.test.ts server/utils/settings/__tests__/normalizeCarouselIntervalSeconds.test.ts server/utils/__tests__/permissionKey.test.ts server/utils/__tests__/roleSlug.test.ts server/utils/__tests__/superadminSessionCrypto.test.ts app/abilities/__tests__/createAbility.test.ts app/constants/audit/__tests__/integrityTechnicalDetailsCopy.test.ts app/constants/audit/__tests__/integrityVerifyDetail.test.ts app/constants/audit/__tests__/integrityPanelActions.test.ts app/constants/audit/__tests__/integrityAlterationsCopy.test.ts"
   },
   "dependencies": {
     "@casl/ability": "^6.7.5",
@@ -44,6 +45,7 @@
     "leaflet": "^1.9.4",
     "mongodb": "^7.0.0",
     "nuxt": "^4.2.1",
+    "opentimestamps": "^0.4.9",
     "prisma": "^6.19.0",
     "typescript": "^5.9.3",
     "vue": "^3.5.25",

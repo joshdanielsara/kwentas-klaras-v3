@@ -1,0 +1,7 @@
+export const APP_SETTING_KEY = {
+  PUBLIC_CAROUSEL_INTERVAL_SECONDS: 'public_carousel_interval_seconds',
+} as const
+
+export const PUBLIC_CAROUSEL_INTERVAL_DEFAULT_SECONDS = 5
+export const PUBLIC_CAROUSEL_INTERVAL_MIN_SECONDS = 3
+export const PUBLIC_CAROUSEL_INTERVAL_MAX_SECONDS = 120

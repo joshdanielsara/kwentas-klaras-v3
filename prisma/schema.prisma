@@ -95,17 +95,40 @@ model Project {
 }
 
 model ProjectActivity {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  projectId   String    @map("project_id") @db.ObjectId
-  action      String
-  description String
-  userId      String?   @map("user_id") @db.ObjectId
-  metadata    String?
-  createdAt   DateTime? @default(now()) @map("created_at")
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  projectId     String    @map("project_id") @db.ObjectId
+  action        String
+  description   String
+  userId        String?   @map("user_id") @db.ObjectId
+  metadata      String?
+  integrityHash String?   @map("integrity_hash")
+  batchId       String?   @map("batch_id") @db.ObjectId
+  merkleIndex   Int?      @map("merkle_index")
+  createdAt     DateTime? @default(now()) @map("created_at")
 
   @@index([projectId])
   @@index([createdAt])
+  @@index([batchId])
+  @@index([integrityHash])
   @@map("project_activities")
+}
+
+model AuditIntegrityBatch {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  merkleRoot        String    @map("merkle_root")
+  otsProof          String?   @map("ots_proof")
+  status            String    @default("pending")
+  leafCount         Int       @default(0) @map("leaf_count")
+  /// JSON map of projectId -> SHA-256 of canonical project master data
+  projectDataHashes String?   @map("project_data_hashes")
+  sealedAt          DateTime? @map("sealed_at")
+  createdAt         DateTime? @default(now()) @map("created_at")
+  updatedAt         DateTime? @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([merkleRoot])
+  @@index([createdAt])
+  @@map("audit_integrity_batches")
 }
 
 model AdditionalBudget {
@@ -201,5 +224,15 @@ model RolePermission {
   @@index([roleId])
   @@index([permissionId])
   @@map("role_permissions")
+}
+
+model AppSetting {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  key       String    @unique
+  value     String
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  createdAt DateTime? @default(now()) @map("created_at")
+
+  @@map("app_settings")
 }
 
