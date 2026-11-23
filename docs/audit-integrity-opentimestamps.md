@@ -2,6 +2,8 @@
 
 Free integrity sealing for municipal project activity history. Constituents check records on the existing public carousel (`/`) — no separate verify site and no paid gas chain.
 
+**Future work (seal history, money docs, follow-the-money, mirrors):** see [`audit-integrity-roadmap.md`](./audit-integrity-roadmap.md).
+
 ## Model
 
 | Piece | Where |
