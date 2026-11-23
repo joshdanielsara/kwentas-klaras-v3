@@ -4,6 +4,8 @@ import type { Prisma, PrismaClient } from '@prisma/client';
 import { getFirebaseAuth } from '../../lib/firebase';
 import { generateRandomPassword } from '../../utils/passwordGenerator';
 import { EmailService } from '../email/EmailService';
+import { RoleRepository } from '../../repositories/rbac/RoleRepository';
+import { formatRoleLabel } from '../../../app/utils/user/formatRoleLabel';
 
 export class UserService {
   private repo: UserRepository;
@@ -72,7 +74,9 @@ export class UserService {
 
     try {
       const emailService = new EmailService();
-      const roleDisplayName = (data.role || 'staffs') === 'admin' ? 'Admin' : 'Staff';
+      const roleSlug = data.role || 'staffs';
+      const roleRecord = await new RoleRepository().findBySlug(roleSlug);
+      const roleDisplayName = formatRoleLabel(roleSlug, roleRecord?.name);
       const usernameWithoutAt = username.startsWith('@') ? username.slice(1) : username;
       await emailService.sendCredentialsEmail({
         name: `${data.firstName} ${data.lastName}`,
@@ -96,6 +100,7 @@ export class UserService {
     email?: string;
     department?: string;
     status?: string;
+    role?: string;
   }) {
     const updateData: Prisma.UserUpdateInput = {};
 
@@ -126,6 +131,10 @@ export class UserService {
 
     if (data.status !== undefined) {
       updateData.status = data.status;
+    }
+
+    if (data.role !== undefined) {
+      updateData.role = String(data.role).trim().toLowerCase();
     }
 
     const user = await this.repo.updateById(id, updateData);

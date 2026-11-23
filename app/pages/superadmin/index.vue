@@ -6,22 +6,30 @@
         <div class="space-y-6">
           <div>
             <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Superadmin Overview</h1>
-            <p class="text-sm text-gray-500">Manage dynamic roles and custom permission keys</p>
+            <p class="text-sm text-gray-500">Manage roles, permissions, and project reference catalogs</p>
           </div>
 
-          <div v-if="loading" class="text-sm text-gray-500">Loading summary...</div>
+          <SuperadminOverviewSkeleton v-if="loading" />
           <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
               <p class="text-sm text-gray-500">Roles</p>
               <p class="text-3xl font-bold text-brand-blue mt-2">{{ summary.roleCount }}</p>
             </div>
             <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-              <p class="text-sm text-gray-500">System Roles</p>
-              <p class="text-3xl font-bold text-brand-blue mt-2">{{ summary.systemRoleCount }}</p>
-            </div>
-            <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
               <p class="text-sm text-gray-500">Permissions</p>
               <p class="text-3xl font-bold text-brand-blue mt-2">{{ summary.permissionCount }}</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+              <p class="text-sm text-gray-500">Barangays</p>
+              <p class="text-3xl font-bold text-brand-blue mt-2">{{ summary.barangayCount }}</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+              <p class="text-sm text-gray-500">Services</p>
+              <p class="text-3xl font-bold text-brand-blue mt-2">{{ summary.serviceCount }}</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+              <p class="text-sm text-gray-500">Implementing Units</p>
+              <p class="text-3xl font-bold text-brand-blue mt-2">{{ summary.implementingUnitCount }}</p>
             </div>
             <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
               <p class="text-sm text-gray-500">Custom Permissions</p>
@@ -36,6 +44,7 @@
 
 <script setup lang="ts">
 import SuperadminSidebar from '~/components/superadmin/Sidebar.vue'
+import SuperadminOverviewSkeleton from '~/components/skeletons/superadmin/OverviewSkeleton.vue'
 
 definePageMeta({
   layout: false,
@@ -48,6 +57,9 @@ const summary = ref({
   systemRoleCount: 0,
   permissionCount: 0,
   customPermissionCount: 0,
+  barangayCount: 0,
+  serviceCount: 0,
+  implementingUnitCount: 0,
 })
 
 onMounted(async () => {
@@ -59,6 +71,9 @@ onMounted(async () => {
         systemRoleCount: number
         permissionCount: number
         customPermissionCount: number
+        barangayCount: number
+        serviceCount: number
+        implementingUnitCount: number
       }
     }>('/api/superadmin/summary')
     summary.value = response.summary

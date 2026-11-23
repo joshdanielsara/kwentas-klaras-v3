@@ -1,5 +1,5 @@
 import { prisma } from '../../lib/prisma';
-import type { PrismaClient, Service } from '@prisma/client';
+import type { Prisma, PrismaClient, Service } from '@prisma/client';
 import { IServiceRepository } from '../../interfaces/repositories/IServiceRepository';
 
 export class ServiceRepository implements IServiceRepository {
@@ -20,5 +20,17 @@ export class ServiceRepository implements IServiceRepository {
 
   async findByName(name: string): Promise<Service | null> {
     return this.client.service.findUnique({ where: { name } });
+  }
+
+  async create(data: Prisma.ServiceCreateInput): Promise<Service> {
+    return this.client.service.create({ data });
+  }
+
+  async updateById(id: string, data: Prisma.ServiceUpdateInput): Promise<Service> {
+    return this.client.service.update({ where: { id }, data });
+  }
+
+  async deleteById(id: string): Promise<Service> {
+    return this.client.service.delete({ where: { id } });
   }
 }

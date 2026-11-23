@@ -149,6 +149,9 @@
                       <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                         <p class="text-sm text-gray-600 truncate">{{ user.email || 'N/A' }}</p>
                         <div class="flex items-center gap-2 flex-wrap">
+                          <span class="inline-flex text-[10px] font-semibold px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-100">
+                            {{ formatRoleLabel(user.role) }}
+                          </span>
                           <span v-if="user.department" class="inline-flex text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
                             {{ user.department }}
                           </span>
@@ -261,6 +264,7 @@ import { usePageAnimations } from '~/composables/ui/usePageAnimations'
 import { usePagination } from '~/composables/ui/usePagination'
 import { USER_FILTER_TYPES, type UserFilterType } from '~/constants/user/filterTypes'
 import { useErrorHandler } from '~/composables/error/useErrorHandler'
+import { formatRoleLabel } from '~/utils/user/formatRoleLabel'
 import Pagination from '~/components/ui/Pagination.vue'
 
 const searchQuery = ref('')

@@ -7,7 +7,7 @@ Dynamic roles and permissions for Kwentas Klaras, managed from a separate Supera
 - Superadmin credentials come from **env only** (`SUPERADMIN_EMAIL`, `SUPERADMIN_PASSWORD`, `SUPERADMIN_SESSION_SECRET`)
 - Superadmin is **not** a Firebase user and **not** in the `users` collection
 - Municipal users keep Firebase login; their `User.role` is a **role slug** (`admin`, `staffs`, or custom)
-- Permissions are a catalog of `action` + `subject` keys (custom keys allowed)
+- Permissions are a seeded catalog of `action` + `subject` keys (view/assign in Superadmin; not created from the UI)
 - Roles are many-to-many with permissions via `role_permissions`
 
 ## Models
@@ -72,13 +72,17 @@ UI:
 - `/superadmin` overview
 - `/superadmin/roles` + `/superadmin/roles/:id`
 - `/superadmin/permissions`
+- `/superadmin/barangays`, `/superadmin/services`, `/superadmin/implementing-units` (see `docs/superadmin-catalogs.md`)
+
+Async first paint uses skeleton placeholders under `app/components/skeletons/superadmin/` (no “Loading…” copy).
 
 ## Municipal app wiring
 
 - Login / `/api/auth/me` return `user.permissions[]` for the user’s role slug
 - FE `createAbility(user)` builds CASL rules from that list
 - FE helpers (`useUserPermissions`) use ability checks, not hard-coded admin-only for projects/users
-- User create/edit role picker loads `/api/roles`
+- User create/edit role picker loads `/api/roles` (all role slugs, including custom)
+- Create and update user APIs validate `role` against the roles catalog and **persist** the slug on the user
 - Mutating user/project APIs use `requirePermission(action, subject)`
 
 ## Tests
@@ -97,5 +101,7 @@ npm run test:unit
 | Role slug validation | `server/utils/__tests__/roleSlug.test.ts` |
 | Superadmin session crypto | `server/utils/__tests__/superadminSessionCrypto.test.ts` |
 | CASL ability builder | `app/abilities/__tests__/createAbility.test.ts` |
+| Role department rule | `app/utils/user/__tests__/roleRequiresDepartment.test.ts` |
+| Role label formatting | `app/utils/user/__tests__/formatRoleLabel.test.ts` |
 
-Covers permission key validation, role slug validation, admin nav + project-detail permission maps, and ability building from permission grants.
+Covers permission key validation, role slug validation, admin nav + project-detail permission maps, user role assignment helpers, and ability building from permission grants.

@@ -3,6 +3,7 @@ import { useErrorHandler } from '../error/useErrorHandler'
 import { getRequiredFields } from '~/constants/user/requiredFields'
 import type { UserWithPassword } from '~/types/user/userWithPassword'
 import { UserRole } from '~/enums/UserRole'
+import { roleRequiresDepartment } from '~/utils/user/roleRequiresDepartment'
 
 export const useUserForm = () => {
   const { handleSaveUser } = useUsers()
@@ -44,7 +45,7 @@ export const useUserForm = () => {
           username: usernameWithoutAt,
           email: form.email.trim(),
           role: form.role,
-          department: form.role === 'admin' ? '' : form.department,
+          department: roleRequiresDepartment(form.role) ? form.department : '',
           status: form.status,
         }
 

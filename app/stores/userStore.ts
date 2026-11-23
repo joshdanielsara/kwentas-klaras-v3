@@ -72,8 +72,10 @@ export const useUserStore = () => {
     error.value = null
 
     try {
+      const headers = await useAuthHeaders()
       const response = await $fetch<{ success: boolean; user: User }>(`/api/users/${userId}`, {
         method: 'PUT',
+        headers,
         body: userData,
       })
 

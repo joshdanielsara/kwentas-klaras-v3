@@ -4,7 +4,7 @@ import { getRequiredFields } from '~/constants/user/requiredFields'
 import type { UserWithPassword } from '~/types/user/userWithPassword'
 import type { User } from '~/types/user/user'
 import { UserRole } from '~/enums/UserRole'
-import { asyncHandler } from '~/utils/asyncHandler'
+import { roleRequiresDepartment } from '~/utils/user/roleRequiresDepartment'
 
 export const useUserEditForm = (editingUser: Ref<User | null>) => {
   const { handleSaveUser } = useUsers()
@@ -66,7 +66,7 @@ export const useUserEditForm = (editingUser: Ref<User | null>) => {
           username: usernameWithoutAt,
           email: form.email.trim(),
           role: form.role,
-          department: form.role === 'admin' ? '' : form.department,
+          department: roleRequiresDepartment(form.role) ? form.department : '',
           status: form.status,
         }
 

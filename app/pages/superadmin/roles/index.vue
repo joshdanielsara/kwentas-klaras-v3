@@ -33,7 +33,7 @@
             </button>
           </div>
 
-          <div v-if="loading" class="text-sm text-gray-500">Loading roles...</div>
+          <SuperadminTableListSkeleton v-if="loading" :columns="5" :rows="5" />
           <div v-else class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
@@ -76,6 +76,7 @@
 
 <script setup lang="ts">
 import SuperadminSidebar from '~/components/superadmin/Sidebar.vue'
+import SuperadminTableListSkeleton from '~/components/skeletons/superadmin/TableListSkeleton.vue'
 import { useRoles } from '~/composables/superadmin/useRoles'
 
 definePageMeta({

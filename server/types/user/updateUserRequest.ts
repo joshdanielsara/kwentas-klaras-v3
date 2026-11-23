@@ -7,5 +7,6 @@ export interface UpdateUserRequest {
   email?: string
   department?: UserDepartment
   status?: 'Active' | 'Inactive'
+  role?: string
 }
 

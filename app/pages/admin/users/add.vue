@@ -111,7 +111,7 @@
                   </div>
 
                   <SelectInput
-                    v-if="form.role !== 'admin'"
+                    v-if="requiresDepartment"
                     id="department"
                     v-model="form.department"
                     :options="departments"
@@ -202,14 +202,17 @@ import LoadingModal from '~/components/ui/LoadingModal.vue'
 import { MODAL_MESSAGES } from '~/constants/ui/modalMessages'
 import { useFormModals } from '~/composables/ui/useFormModals'
 import { useUserForm } from '~/composables/user/useUserForm'
-import { USER_DEPARTMENTS } from '~/constants/user/userDepartments'
 import { useRoleOptions } from '~/composables/user/useRoleOptions'
+import { useDepartments } from '~/composables/department/useDepartments'
+import { roleRequiresDepartment } from '~/utils/user/roleRequiresDepartment'
 
 const { form, loading, error, requiredFieldsCount, remainingRequiredFields, handleSubmit, resetForm } = useUserForm()
 const { roles: roleOptions, fetchRoleOptions } = useRoleOptions()
+const { departments: departmentRecords, fetchDepartments } = useDepartments()
+const requiresDepartment = computed(() => roleRequiresDepartment(form.role))
 
 onMounted(async () => {
-  await fetchRoleOptions()
+  await Promise.all([fetchRoleOptions(), fetchDepartments()])
   if (roleOptions.value.length > 0 && !roleOptions.value.some((role) => role.slug === form.role)) {
     form.role = roleOptions.value[0].slug
   }
@@ -225,7 +228,9 @@ const {
   closeSuccessModal,
 } = useFormModals()
 
-const departments = computed(() => USER_DEPARTMENTS.map((dept, index) => ({ id: index.toString(), name: dept, value: dept })))
+const departments = computed(() =>
+  departmentRecords.value.map((dept) => ({ id: dept.id, name: dept.name, value: dept.name }))
+)
 
 const isFormValid = computed(() => {
   const isValid = remainingRequiredFields.value === 0

@@ -2,6 +2,7 @@ import type { User } from '~/types/user/user'
 import { useModal } from '../ui/useModal'
 import { MODAL_MESSAGES } from '~/constants/ui/modalMessages'
 import { asyncHandler } from '~/utils/asyncHandler'
+import { formatRoleLabel } from '~/utils/user/formatRoleLabel'
 
 export const useUserModal = (saveError?: Ref<string | null>, handleDeleteUser?: (userId: string) => Promise<void>) => {
   const editingUser = ref<User | null>(null)
@@ -30,7 +31,7 @@ export const useUserModal = (saveError?: Ref<string | null>, handleDeleteUser?: 
     if (userToEdit.value) {
       return {
         name: `${userToEdit.value.firstName} ${userToEdit.value.lastName}`,
-        role: userToEdit.value.role === 'admin' ? 'Admin' : 'Staff',
+        role: formatRoleLabel(userToEdit.value.role),
         email: userToEdit.value.email
       }
     }

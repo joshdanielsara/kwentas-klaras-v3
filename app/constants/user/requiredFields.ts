@@ -1,3 +1,5 @@
+import { roleRequiresDepartment } from '../../utils/user/roleRequiresDepartment'
+
 type FieldChecker = () => boolean
 
 interface RequiredField {
@@ -12,7 +14,7 @@ export const getRequiredFields = (form: any, role: string): RequiredField[] => {
     { value: () => !!form.email?.trim() },
   ]
   
-  if (role !== 'admin') {
+  if (roleRequiresDepartment(role)) {
     fields.push({ value: () => !!form.department?.trim() })
   }
   

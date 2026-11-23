@@ -1,5 +1,5 @@
 import { prisma } from '../../lib/prisma';
-import type { PrismaClient, Location } from '@prisma/client';
+import type { Prisma, PrismaClient, Location } from '@prisma/client';
 import { ILocationRepository } from '../../interfaces/repositories/ILocationRepository';
 
 export class LocationRepository implements ILocationRepository {
@@ -20,5 +20,17 @@ export class LocationRepository implements ILocationRepository {
 
   async findByName(name: string): Promise<Location | null> {
     return this.client.location.findUnique({ where: { name } });
+  }
+
+  async create(data: Prisma.LocationCreateInput): Promise<Location> {
+    return this.client.location.create({ data });
+  }
+
+  async updateById(id: string, data: Prisma.LocationUpdateInput): Promise<Location> {
+    return this.client.location.update({ where: { id }, data });
+  }
+
+  async deleteById(id: string): Promise<Location> {
+    return this.client.location.delete({ where: { id } });
   }
 }

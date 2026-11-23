@@ -3,7 +3,7 @@
     <SuperadminSidebar />
     <main class="flex-1 flex flex-col overflow-hidden min-w-0">
       <div class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-brand-bg">
-        <div v-if="loading" class="text-sm text-gray-500">Loading role...</div>
+        <SuperadminRoleDetailSkeleton v-if="loading" />
         <div v-else-if="role" class="space-y-6 max-w-5xl">
           <div class="flex items-center justify-between gap-4">
             <div>
@@ -60,6 +60,7 @@
 
 <script setup lang="ts">
 import SuperadminSidebar from '~/components/superadmin/Sidebar.vue'
+import SuperadminRoleDetailSkeleton from '~/components/skeletons/superadmin/RoleDetailSkeleton.vue'
 import { useRoles } from '~/composables/superadmin/useRoles'
 import { usePermissions } from '~/composables/superadmin/usePermissions'
 import type { RoleItem } from '~/types/rbac/role'

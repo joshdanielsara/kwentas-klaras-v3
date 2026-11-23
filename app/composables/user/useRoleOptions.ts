@@ -1,6 +1,7 @@
 import type { RoleOption } from '~/types/rbac/role'
 import { useAuthHeaders } from '~/composables/auth/useAuthHeaders'
 import { UserRole } from '~/enums/UserRole'
+import { formatRoleLabel } from '~/utils/user/formatRoleLabel'
 
 export const useRoleOptions = () => {
   const roles = ref<RoleOption[]>([])
@@ -29,10 +30,30 @@ export const useRoleOptions = () => {
     }
   }
 
+  const ensureRoleOption = (roleSlug: string | null | undefined) => {
+    const slug = roleSlug?.trim().toLowerCase()
+    if (!slug) {
+      return
+    }
+    if (roles.value.some((role) => role.slug === slug)) {
+      return
+    }
+    roles.value = [
+      ...roles.value,
+      {
+        id: `current-${slug}`,
+        slug,
+        name: formatRoleLabel(slug),
+        isSystem: false,
+      },
+    ]
+  }
+
   return {
     roles,
     loading,
     errorMessage,
     fetchRoleOptions,
+    ensureRoleOption,
   }
 }

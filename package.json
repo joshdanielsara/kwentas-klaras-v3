@@ -14,7 +14,8 @@
     "prisma:validate": "prisma validate",
     "prisma:seed": "npx tsx prisma/seed.ts",
     "seed:roles-permissions": "npx tsx seeders/seedRolesPermissions.ts",
-    "test:unit": "node --import tsx --test app/constants/rbac/__tests__/permissionCatalog.test.ts app/constants/admin/__tests__/adminNavPermissions.test.ts app/constants/project/__tests__/detailTabPermissions.test.ts app/utils/__tests__/adminNavAccess.test.ts server/utils/__tests__/permissionKey.test.ts server/utils/__tests__/roleSlug.test.ts server/utils/__tests__/superadminSessionCrypto.test.ts app/abilities/__tests__/createAbility.test.ts"
+    "seed:catalogs": "npx tsx seeders/seedDepartmentsLocations.ts",
+    "test:unit": "node --import tsx --test app/constants/rbac/__tests__/permissionCatalog.test.ts app/constants/admin/__tests__/adminNavPermissions.test.ts app/constants/project/__tests__/detailTabPermissions.test.ts app/constants/superadmin/__tests__/catalogResources.test.ts app/utils/__tests__/adminNavAccess.test.ts app/utils/catalog/__tests__/normalizeCatalogName.test.ts app/utils/user/__tests__/roleRequiresDepartment.test.ts app/utils/user/__tests__/formatRoleLabel.test.ts server/utils/__tests__/permissionKey.test.ts server/utils/__tests__/roleSlug.test.ts server/utils/__tests__/superadminSessionCrypto.test.ts app/abilities/__tests__/createAbility.test.ts"
   },
   "dependencies": {
     "@casl/ability": "^6.7.5",

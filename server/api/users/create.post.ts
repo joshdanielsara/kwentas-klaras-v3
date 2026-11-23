@@ -5,6 +5,7 @@ import { requireCSRF } from '../../utils/csrfMiddleware'
 import { RoleRepository } from '../../repositories/rbac/RoleRepository'
 import { sanitizeString, sanitizeEmail } from '../../utils/sanitize'
 import { withErrorHandler } from '../../utils/errorHandler'
+import { roleRequiresDepartment } from '../../../app/utils/user/roleRequiresDepartment'
 
 export default defineEventHandler(async (event) => {
   await requirePermission(event, 'create', 'User')
@@ -23,7 +24,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const roleSlug = (sanitizedBody.role || 'staffs').toLowerCase()
-  const requiresDepartment = roleSlug !== 'admin'
+  const requiresDepartment = roleRequiresDepartment(roleSlug)
 
   if (
     !sanitizedBody.firstName ||

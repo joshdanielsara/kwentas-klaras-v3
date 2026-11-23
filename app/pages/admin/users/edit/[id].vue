@@ -111,7 +111,7 @@
                   </div>
 
                   <SelectInput
-                    v-if="form.role !== 'admin'"
+                    v-if="requiresDepartment"
                     id="department"
                     v-model="form.department"
                     :options="departments"
@@ -212,16 +212,18 @@ import { MODAL_MESSAGES } from '~/constants/ui/modalMessages'
 import { useFormModals } from '~/composables/ui/useFormModals'
 import { useUsers } from '~/composables/user/useUsers'
 import { useUserEditForm } from '~/composables/user/useUserEditForm'
-import { USER_DEPARTMENTS } from '~/constants/user/userDepartments'
 import { USER_STATUS_OPTIONS } from '~/constants/user/userStatus'
 import { useRoleOptions } from '~/composables/user/useRoleOptions'
+import { useDepartments } from '~/composables/department/useDepartments'
+import { roleRequiresDepartment } from '~/utils/user/roleRequiresDepartment'
 
 const route = useRoute()
 const router = useRouter()
 const userId = route.params.id as string
 
 const { users, fetchUsers } = useUsers()
-const { roles: roleOptions, fetchRoleOptions } = useRoleOptions()
+const { roles: roleOptions, fetchRoleOptions, ensureRoleOption } = useRoleOptions()
+const { departments: departmentRecords, fetchDepartments } = useDepartments()
 const {
   showConfirmationModal,
   showLoadingModal,
@@ -237,15 +239,26 @@ const editingUser = computed(() => {
 })
 
 const { form, loading, error, requiredFieldsCount, remainingRequiredFields, isFormValid, handleSubmit } = useUserEditForm(editingUser)
+const requiresDepartment = computed(() => roleRequiresDepartment(form.role))
 
-const departments = computed(() => USER_DEPARTMENTS.map((dept, index) => ({ id: index.toString(), name: dept, value: dept })))
+const departments = computed(() =>
+  departmentRecords.value.map((dept) => ({ id: dept.id, name: dept.name, value: dept.name }))
+)
 
 const statusOptions = computed(() => USER_STATUS_OPTIONS)
 
 onMounted(async () => {
-  await Promise.all([fetchUsers(), fetchRoleOptions()])
+  await Promise.all([fetchUsers(), fetchRoleOptions(), fetchDepartments()])
   if (!editingUser.value) {
     router.push('/admin/users')
+    return
+  }
+  ensureRoleOption(editingUser.value.role)
+})
+
+watch(editingUser, (user) => {
+  if (user?.role) {
+    ensureRoleOption(user.role)
   }
 })
 
