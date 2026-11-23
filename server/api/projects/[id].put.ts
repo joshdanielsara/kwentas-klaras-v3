@@ -1,7 +1,12 @@
 import { ProjectService } from '../../../server/services/project/ProjectService'
 import { withErrorHandler } from '../../../server/utils/errorHandler'
+import { requirePermission } from '../../../server/utils/requirePermission'
+import { requireCSRF } from '../../../server/utils/csrfMiddleware'
 
 export default defineEventHandler(async (event) => {
+  await requirePermission(event, 'update', 'Project')
+  await requireCSRF(event)
+
   const id = getRouterParam(event, 'id')
 
   if (!id) {
@@ -15,6 +20,7 @@ export default defineEventHandler(async (event) => {
 
   return await withErrorHandler(async () => {
     const projectService = new ProjectService()
+
     const project = await projectService.update(id, {
       name: body.name,
       implementingUnit: body.implementingUnit,

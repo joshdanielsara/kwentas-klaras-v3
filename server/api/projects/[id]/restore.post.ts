@@ -1,10 +1,11 @@
 import { ProjectService } from '../../../services/project/ProjectService'
-import { requireAdmin } from '../../../utils/auth'
+import { requirePermission } from '../../../utils/requirePermission'
 import { requireCSRF } from '../../../utils/csrfMiddleware'
 import { withErrorHandler } from '../../../utils/errorHandler'
 
 export default defineEventHandler(async (event) => {
-  const user = await requireAdmin(event)
+  const user = await requirePermission(event, 'delete', 'Project')
+
   await requireCSRF(event)
   
   const id = getRouterParam(event, 'id')

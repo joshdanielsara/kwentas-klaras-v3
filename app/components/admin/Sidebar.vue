@@ -132,26 +132,11 @@
 
 <script setup lang="ts">
 import { ADMIN_MENU } from '~/constants/admin/adminMenu'
-import type { AdminMenuItem } from '~/types/admin/menu'
 import { useSidebar } from '~/composables/ui/useSidebar'
 import { useSidebarStore } from '~/stores/sidebarStore'
-import { useUserPermissions } from '~/composables/user/useUserPermissions'
-import { useAuthStore } from '~/stores/authStore'
+import { useAdminNavPermissions } from '~/composables/admin/useAdminNavPermissions'
 
-const { canManageUsers } = useUserPermissions()
-const authStore = useAuthStore()
-
-const filteredMenu = computed(() => {
-  return ADMIN_MENU.filter(item => {
-    if (item.path === '/admin/users') {
-      if (!authStore.user.value) {
-        return true
-      }
-      return canManageUsers.value
-    }
-    return true
-  })
-})
+const { visibleMenu: filteredMenu } = useAdminNavPermissions()
 
 const {
   collapsed,

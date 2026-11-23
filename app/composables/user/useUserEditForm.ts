@@ -66,7 +66,7 @@ export const useUserEditForm = (editingUser: Ref<User | null>) => {
           username: usernameWithoutAt,
           email: form.email.trim(),
           role: form.role,
-          department: form.role === UserRole.ADMIN ? '' : form.department,
+          department: form.role === 'admin' ? '' : form.department,
           status: form.status,
         }
 

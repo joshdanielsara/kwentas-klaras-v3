@@ -1,12 +1,13 @@
 import { DisbursementService } from '../../services/disbursement/DisbursementService';
 import type { CreateDisbursementRequest } from '../../types/disbursement/createDisbursementRequest';
-import { requireAuth } from '../../utils/auth';
+import { requirePermission } from '../../utils/requirePermission';
 import { requireCSRF } from '../../utils/csrfMiddleware';
 import { sanitizeString, sanitizeNumber } from '../../utils/sanitize';
 import { withErrorHandler } from '../../utils/errorHandler';
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event);
+  await requirePermission(event, 'create', 'Disbursement');
+
   await requireCSRF(event);
   
   const body = await readBody<CreateDisbursementRequest>(event);

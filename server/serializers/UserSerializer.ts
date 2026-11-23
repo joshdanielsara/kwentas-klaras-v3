@@ -1,7 +1,8 @@
 import type { User } from '@prisma/client';
+import type { UserPermissionGrant } from '../../../app/types/rbac/permission'
 
 export class UserSerializer {
-  static formatUser(user: User) {
+  static formatUser(user: User, permissions: UserPermissionGrant[] = []) {
     return {
       id: user.id,
       firebaseId: user.firebaseId,
@@ -13,6 +14,7 @@ export class UserSerializer {
       department: user.department,
       status: user.status,
       joined: user.joined ? new Date(user.joined).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : undefined,
+      permissions,
     };
   }
 
@@ -20,8 +22,7 @@ export class UserSerializer {
     return users.map(user => this.formatUser(user));
   }
 
-  static detail(user: User | null) {
-    return user ? this.formatUser(user) : null;
+  static detail(user: User | null, permissions: UserPermissionGrant[] = []) {
+    return user ? this.formatUser(user, permissions) : null;
   }
 }
-

@@ -1,7 +1,7 @@
-import { UserRole } from '~/enums/UserRole'
 import { useAuthStore } from '~/stores/authStore'
+import { canAbilityAccessPath, findFirstAllowedAdminPath } from '~/utils/adminNavAccess'
 
-export default defineNuxtRouteMiddleware(async (to) => {
+export default defineNuxtRouteMiddleware(async () => {
   if (process.server) {
     return navigateTo('/auth/login', { replace: true })
   }
@@ -12,7 +12,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo('/auth/login', { replace: true })
   }
 
-  if (authStore.userRole.value !== UserRole.ADMIN) {
-    return navigateTo('/admin', { replace: true })
+  if (!canAbilityAccessPath(authStore.ability.value, '/admin/users')) {
+    const fallback = findFirstAllowedAdminPath(authStore.ability.value) || '/admin'
+    return navigateTo(fallback, { replace: true })
   }
 })

@@ -1,12 +1,13 @@
 import { UserService } from '../../services/user/UserService'
 import type { CreateUserRequest } from '../../types/user/createUserRequest'
-import { requireAdmin } from '../../utils/auth'
+import { requirePermission } from '../../utils/requirePermission'
 import { requireCSRF } from '../../utils/csrfMiddleware'
+import { RoleRepository } from '../../repositories/rbac/RoleRepository'
 import { sanitizeString, sanitizeEmail } from '../../utils/sanitize'
 import { withErrorHandler } from '../../utils/errorHandler'
 
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requirePermission(event, 'create', 'User')
   await requireCSRF(event)
   
   const body = await readBody<CreateUserRequest>(event)
@@ -21,18 +22,19 @@ export default defineEventHandler(async (event) => {
     role: body.role ? sanitizeString(body.role) : undefined,
   }
 
-  const isStaff = (sanitizedBody.role || 'staffs').toLowerCase() === 'staffs'
+  const roleSlug = (sanitizedBody.role || 'staffs').toLowerCase()
+  const requiresDepartment = roleSlug !== 'admin'
 
   if (
     !sanitizedBody.firstName ||
     !sanitizedBody.lastName ||
     !sanitizedBody.username ||
     !sanitizedBody.email ||
-    (isStaff && !sanitizedBody.department)
+    (requiresDepartment && !sanitizedBody.department)
   ) {
     throw createError({
       statusCode: 400,
-      message: isStaff
+      message: requiresDepartment
         ? 'Missing required fields: firstName, lastName, username, email, department'
         : 'Missing required fields: firstName, lastName, username, email'
     })
@@ -46,6 +48,15 @@ export default defineEventHandler(async (event) => {
   }
 
   return await withErrorHandler(async () => {
+    const roleRepository = new RoleRepository()
+    const role = await roleRepository.findBySlug(roleSlug)
+    if (!role) {
+      throw createError({
+        statusCode: 400,
+        message: 'Invalid role selected',
+      })
+    }
+
     const userService = new UserService()
     const user = await userService.create({
       firstName: sanitizedBody.firstName,
@@ -54,7 +65,7 @@ export default defineEventHandler(async (event) => {
       email: sanitizedBody.email,
       department: sanitizedBody.department,
       status: sanitizedBody.status,
-      role: sanitizedBody.role,
+      role: role.slug,
     })
 
     return {

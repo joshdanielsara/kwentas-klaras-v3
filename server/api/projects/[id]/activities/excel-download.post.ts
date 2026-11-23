@@ -1,7 +1,10 @@
 import { ProjectActivityService } from '../../../../services/project/ProjectActivityService'
 import { withErrorHandler } from '../../../../utils/errorHandler'
+import { requirePermission } from '../../../../utils/requirePermission'
 
 export default defineEventHandler(async (event) => {
+  await requirePermission(event, 'export', 'ProjectLog')
+
   const projectId = getRouterParam(event, 'id')
 
   if (!projectId) {

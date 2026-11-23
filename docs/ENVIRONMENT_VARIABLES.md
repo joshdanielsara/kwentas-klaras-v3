@@ -42,6 +42,17 @@ These are exposed to the client-side and used for frontend authentication.
 |----------|-------------|---------|
 | `APP_URL` | Your application URL | `https://kwentas-klaras-v3.vercel.app` |
 
+### Superadmin (env-only, not a Firebase/DB user)
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `SUPERADMIN_EMAIL` | Superadmin login email | `ops@example.com` |
+| `SUPERADMIN_PASSWORD` | Superadmin login password | long random secret |
+| `SUPERADMIN_SESSION_SECRET` | HMAC secret for Superadmin session cookie (min 16 chars) | random 32+ char string |
+
+These are **server-only** (`runtimeConfig`, not `public`). Superadmin is not stored in Mongo or Firebase Auth. See `docs/superadmin-rbac.md`.
+
+
 ### Email Configuration (Optional - for Brevo/SendGrid)
 
 | Variable | Description |

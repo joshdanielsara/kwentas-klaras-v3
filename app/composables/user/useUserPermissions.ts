@@ -5,8 +5,12 @@ export const useUserPermissions = () => {
   const authStore = useAuthStore()
   const user = authStore.user
 
+  const can = (action: string, subject: string): boolean => {
+    return authStore.ability.value?.can(action, subject) ?? false
+  }
+
   const isAdmin = computed(() => {
-    return user.value?.role === UserRole.ADMIN
+    return user.value?.role === UserRole.ADMIN || can('manage', 'all')
   })
 
   const isStaff = computed(() => {
@@ -14,15 +18,15 @@ export const useUserPermissions = () => {
   })
 
   const canManageUsers = computed(() => {
-    return isAdmin.value
+    return can('manage', 'all') || can('create', 'User') || can('update', 'User') || can('delete', 'User')
   })
 
   const canViewUsers = computed(() => {
-    return isAdmin.value || isStaff.value
+    return can('manage', 'all') || can('read', 'User') || canManageUsers.value
   })
 
   const canManageProjects = computed(() => {
-    return isAdmin.value
+    return can('manage', 'all') || can('create', 'Project') || can('update', 'Project') || can('delete', 'Project')
   })
 
   return {
@@ -31,6 +35,6 @@ export const useUserPermissions = () => {
     canManageUsers,
     canViewUsers,
     canManageProjects,
+    can,
   }
 }
-

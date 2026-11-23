@@ -263,7 +263,7 @@
                     Total: <span class="font-semibold text-gray-900">₱{{ formatNumber(project.totalAddedBudget || 0) }}</span>
                     </div>
                     <button
-                      v-if="canManageProjects"
+                      v-if="canCreateBudget"
                       @click="() => router.push(`/admin/projects/add-budget/${projectId}`)"
                       class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
                     >
@@ -375,7 +375,7 @@
                     Total: <span class="font-semibold text-gray-900">₱{{ formatNumber(totalObligations) }}</span>
                     </div>
                     <button
-                      v-if="canManageProjects"
+                      v-if="canCreateObligation"
                       @click="() => router.push(`/admin/projects/add-obligation/${projectId}`)"
                       class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
                     >
@@ -496,7 +496,7 @@
                       Total: <span class="font-semibold text-gray-900">₱{{ formatNumber(totalDisbursements) }}</span>
                     </div>
                     <button
-                      v-if="canManageProjects"
+                      v-if="canCreateDisbursement"
                       @click="() => router.push(`/admin/projects/add-disbursement/${projectId}`)"
                       class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
                     >
@@ -829,7 +829,7 @@
                     </div>
                     </div>
                     <button
-                      v-if="auditLogs.length > 0"
+                      v-if="canExportProjectLog && auditLogs.length > 0"
                       @click="exportLogsToExcel"
                       class="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
                     >
@@ -900,7 +900,7 @@
                       </div>
                     </div>
                     <button
-                      v-if="canManageProjects"
+                      v-if="canCreateDocument"
                       disabled
                       class="flex items-center gap-2 px-4 py-2 bg-gray-400 text-white text-sm font-medium rounded-lg cursor-not-allowed opacity-60"
                       title="Coming soon"
@@ -931,6 +931,8 @@
                 :project-id="projectId"
                 :initial-latitude="(project as any)?.latitude"
                 :initial-longitude="(project as any)?.longitude"
+                :has-save-button="canUpdateProjectMap"
+                :show-clear-button="canClearProjectMap"
                 @saved="handleMapSaved"
               />
             </div>
@@ -964,8 +966,9 @@ import { useProjectDetail } from '~/composables/project/useProjectDetail'
 import { useProjectFinancials } from '~/composables/project/useProjectFinancials'
 import { useProjectCharts } from '~/composables/project/useProjectCharts'
 import { useProjectDetailActions } from '~/composables/project/useProjectDetailActions'
-import { TAB_IDS } from '~/constants/project/detailTabs'
+import { TAB_IDS, type ProjectDetailTabId } from '~/constants/project/detailTabs'
 import { useUserPermissions } from '~/composables/user/useUserPermissions'
+import { useProjectDetailPermissions } from '~/composables/project/useProjectDetailPermissions'
 import { useLoadingState } from '~/composables/ui/useLoadingState'
 import { usePageAnimations } from '~/composables/ui/usePageAnimations'
 import { useErrorHandler } from '~/composables/error/useErrorHandler'
@@ -977,6 +980,16 @@ const router = useRouter()
 const animations = usePageAnimations()
 const projectId = route.params.id as string
 const { canManageProjects } = useUserPermissions()
+const {
+  visibleTabs: tabs,
+  canCreateBudget,
+  canCreateObligation,
+  canCreateDisbursement,
+  canCreateDocument,
+  canExportProjectLog,
+  canUpdateProjectMap,
+  canClearProjectMap,
+} = useProjectDetailPermissions()
 
 const setActiveTab = (tabId: string) => {
   router.replace({ query: { ...route.query, tab: tabId } })
@@ -1031,7 +1044,6 @@ const {
   loading,
   error,
   activeTab,
-  tabs,
   auditLogs,
   activitiesLoading,
   formatDuration,
@@ -1043,6 +1055,20 @@ const {
   daysRemaining,
   exportLogsToExcel,
 } = useProjectDetail(projectId)
+
+watch(
+  tabs,
+  (nextTabs) => {
+    if (nextTabs.length === 0) {
+      return
+    }
+    const isActiveVisible = nextTabs.some((tab) => tab.id === activeTab.value)
+    if (!isActiveVisible) {
+      setActiveTab(nextTabs[0].id as ProjectDetailTabId)
+    }
+  },
+  { immediate: true }
+)
 
 const { showLoading, markAsLoaded } = useLoadingState(loading)
 

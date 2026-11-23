@@ -1,12 +1,13 @@
 import { ProjectService } from '../../services/project/ProjectService'
 import type { IProject } from '../../types/project/project'
-import { requireAuth } from '../../utils/auth'
+import { requirePermission } from '../../utils/requirePermission'
 import { requireCSRF } from '../../utils/csrfMiddleware'
 import { sanitizeString, sanitizeNumber } from '../../utils/sanitize'
 import { withErrorHandler } from '../../utils/errorHandler'
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event)
+  await requirePermission(event, 'create', 'Project')
+
   await requireCSRF(event)
   
   const body = await readBody<IProject>(event)

@@ -44,7 +44,7 @@ export const useUserForm = () => {
           username: usernameWithoutAt,
           email: form.email.trim(),
           role: form.role,
-          department: form.role === UserRole.ADMIN ? '' : form.department,
+          department: form.role === 'admin' ? '' : form.department,
           status: form.status,
         }
 

@@ -1,10 +1,11 @@
 import { UserRepository } from '../../repositories/user/UserRepository'
 import { UserSerializer } from '../../serializers/UserSerializer'
-import { requireAdmin } from '../../utils/auth'
+import { requirePermission } from '../../utils/requirePermission'
 import { withErrorHandler } from '../../utils/errorHandler'
 
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requirePermission(event, 'read', 'User')
+
 
   return await withErrorHandler(async () => {
     const userRepository = new UserRepository()

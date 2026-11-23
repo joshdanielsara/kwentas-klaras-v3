@@ -1,12 +1,13 @@
 import { ObligationService } from '../../services/obligation/ObligationService';
 import type { CreateObligationRequest } from '../../types/obligation/createObligationRequest';
-import { requireAuth } from '../../utils/auth';
+import { requirePermission } from '../../utils/requirePermission';
 import { requireCSRF } from '../../utils/csrfMiddleware';
 import { sanitizeString, sanitizeNumber } from '../../utils/sanitize';
 import { withErrorHandler } from '../../utils/errorHandler';
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event);
+  await requirePermission(event, 'create', 'Obligation');
+
   await requireCSRF(event);
   
   const body = await readBody<CreateObligationRequest>(event);

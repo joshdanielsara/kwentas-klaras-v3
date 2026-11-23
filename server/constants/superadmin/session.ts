@@ -1,0 +1,3 @@
+export const SUPERADMIN_SESSION_COOKIE = 'superadmin_session'
+export const SUPERADMIN_SESSION_MAX_AGE_SECONDS = 60 * 60 * 8
+export const SUPERADMIN_SESSION_PAYLOAD_VERSION = 1

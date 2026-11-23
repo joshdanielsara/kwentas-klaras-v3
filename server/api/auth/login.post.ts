@@ -4,6 +4,8 @@ import { UserSerializer } from '../../serializers/UserSerializer'
 import { IS_PRODUCTION } from '../../constants/environment'
 import { strictRateLimiter } from '../../utils/rateLimiter'
 import { withErrorHandler } from '../../utils/errorHandler'
+import { RoleService } from '../../services/rbac/RoleService'
+import { RbacBootstrapService } from '../../services/rbac/RbacBootstrapService'
 
 export default defineEventHandler(async (event) => {
   await strictRateLimiter(event)
@@ -46,9 +48,12 @@ export default defineEventHandler(async (event) => {
       maxAge: 60 * 60 * 24 * 7
     })
 
+    await new RbacBootstrapService().ensureDefaults()
+    const permissions = await new RoleService().getPermissionsForRoleSlug(dbUser.role || 'staffs')
+
     return {
       success: true,
-      user: UserSerializer.formatUser(dbUser)
+      user: UserSerializer.formatUser(dbUser, permissions)
     }
   }, {
     defaultStatusCode: 401,

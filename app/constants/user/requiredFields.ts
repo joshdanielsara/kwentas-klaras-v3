@@ -12,10 +12,9 @@ export const getRequiredFields = (form: any, role: string): RequiredField[] => {
     { value: () => !!form.email?.trim() },
   ]
   
-  if (role === 'staffs') {
+  if (role !== 'admin') {
     fields.push({ value: () => !!form.department?.trim() })
   }
   
   return fields
 }
-

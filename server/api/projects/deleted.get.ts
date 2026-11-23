@@ -1,10 +1,11 @@
 import { ProjectRepository } from '../../repositories/project/ProjectRepository'
 import { ProjectSerializer } from '../../serializers/ProjectSerializer'
-import { requireAdmin } from '../../utils/auth'
+import { requirePermission } from '../../utils/requirePermission'
 import { withErrorHandler } from '../../utils/errorHandler'
 
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requirePermission(event, 'read', 'Project')
+
 
   return await withErrorHandler(async () => {
     const projectRepository = new ProjectRepository()

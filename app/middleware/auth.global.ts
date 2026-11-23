@@ -1,4 +1,5 @@
 import { useAuthStore } from '~/stores/authStore'
+import { canAbilityAccessPath, findFirstAllowedAdminPath } from '~/utils/adminNavAccess'
 
 export default defineNuxtRouteMiddleware(async (to) => {
   if (to.path === '/auth/login') {
@@ -25,5 +26,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
     if (!authStore.isAuthenticated) {
       return navigateTo('/auth/login', { replace: true })
     }
+  }
+
+  if (!canAbilityAccessPath(authStore.ability.value, to.path)) {
+    const fallback = findFirstAllowedAdminPath(authStore.ability.value)
+    if (!fallback || fallback === to.path) {
+      return navigateTo('/auth/login', { replace: true })
+    }
+    return navigateTo(fallback, { replace: true })
   }
 })

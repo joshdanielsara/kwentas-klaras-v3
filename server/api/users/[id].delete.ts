@@ -1,10 +1,11 @@
 import { UserService } from '../../services/user/UserService'
-import { requireAdmin } from '../../utils/auth'
+import { requirePermission } from '../../utils/requirePermission'
 import { requireCSRF } from '../../utils/csrfMiddleware'
 import { withErrorHandler } from '../../utils/errorHandler'
 
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requirePermission(event, 'delete', 'User')
+
   await requireCSRF(event)
   
   const id = getRouterParam(event, 'id')

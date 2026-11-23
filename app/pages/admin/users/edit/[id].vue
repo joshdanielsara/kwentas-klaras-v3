@@ -40,6 +40,18 @@
                 <h2 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
                   User Information
                 </h2>
+
+                <div class="mb-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                  <select
+                    v-model="form.role"
+                    class="block w-full md:w-80 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue"
+                  >
+                    <option v-for="role in roleOptions" :key="role.slug" :value="role.slug">
+                      {{ role.name }}
+                    </option>
+                  </select>
+                </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -99,7 +111,7 @@
                   </div>
 
                   <SelectInput
-                    v-if="form.role === UserRole.STAFFS"
+                    v-if="form.role !== 'admin'"
                     id="department"
                     v-model="form.department"
                     :options="departments"
@@ -159,7 +171,7 @@
       :loading="false"
       :user-details="{
         name: `${form.firstName} ${form.lastName}`,
-        role: form.role === UserRole.ADMIN ? 'Admin' : 'Staff',
+        role: roleOptions.find((role) => role.slug === form.role)?.name || form.role,
         email: form.email
       }"
       @confirm="onConfirmUpdate"
@@ -202,13 +214,14 @@ import { useUsers } from '~/composables/user/useUsers'
 import { useUserEditForm } from '~/composables/user/useUserEditForm'
 import { USER_DEPARTMENTS } from '~/constants/user/userDepartments'
 import { USER_STATUS_OPTIONS } from '~/constants/user/userStatus'
-import { UserRole } from '~/enums/UserRole'
+import { useRoleOptions } from '~/composables/user/useRoleOptions'
 
 const route = useRoute()
 const router = useRouter()
 const userId = route.params.id as string
 
 const { users, fetchUsers } = useUsers()
+const { roles: roleOptions, fetchRoleOptions } = useRoleOptions()
 const {
   showConfirmationModal,
   showLoadingModal,
@@ -230,7 +243,7 @@ const departments = computed(() => USER_DEPARTMENTS.map((dept, index) => ({ id: 
 const statusOptions = computed(() => USER_STATUS_OPTIONS)
 
 onMounted(async () => {
-  await fetchUsers()
+  await Promise.all([fetchUsers(), fetchRoleOptions()])
   if (!editingUser.value) {
     router.push('/admin/users')
   }

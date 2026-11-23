@@ -1,3 +1,5 @@
+import type { UserPermissionGrant } from '~/types/rbac/permission'
+
 export interface User {
   id?: string
   firebaseId?: string
@@ -9,5 +11,6 @@ export interface User {
   department: string
   status: 'Active' | 'Inactive'
   joined?: string | Date
+  permissions?: UserPermissionGrant[]
 }
 

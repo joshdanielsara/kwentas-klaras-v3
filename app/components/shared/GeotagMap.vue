@@ -17,6 +17,7 @@
           </div>
           <div class="flex items-center gap-2">
             <button
+              v-if="hasSaveButton"
               @click="toggleInputMode"
               class="px-4 py-2 text-sm font-medium rounded-lg transition-colors"
               :class="inputMode === 'map' 
@@ -33,23 +34,24 @@
                 {{ inputMode === 'map' ? 'Manual Input' : 'Map View' }}
               </span>
             </button>
-            <div v-if="hasSaveButton && hasLocation" class="flex items-center gap-2 ml-2">
-            <button
-              v-if="showClearButton"
-              @click="handleClearLocation"
-              :disabled="saving"
-              class="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Clear Location
-            </button>
-            <button
-              @click="handleSaveLocation"
-              :disabled="saving"
-              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span v-if="saving">Saving...</span>
-              <span v-else>Save Location</span>
-            </button>
+            <div v-if="hasLocation && (showClearButton || hasSaveButton)" class="flex items-center gap-2 ml-2">
+              <button
+                v-if="showClearButton"
+                @click="handleClearLocation"
+                :disabled="saving"
+                class="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Clear Location
+              </button>
+              <button
+                v-if="hasSaveButton"
+                @click="handleSaveLocation"
+                :disabled="saving"
+                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span v-if="saving">Saving...</span>
+                <span v-else>Save Location</span>
+              </button>
             </div>
           </div>
         </div>

@@ -1,7 +1,6 @@
 import { AbilityBuilder, Ability } from '@casl/ability';
 import type { AbilityClass } from '@casl/ability';
 import type { User } from '~/types/user/user';
-import { UserRole } from '~/enums/UserRole';
 
 export type Actions =
   | 'create'
@@ -9,7 +8,8 @@ export type Actions =
   | 'update'
   | 'delete'
   | 'manage'
-  | 'view';
+  | 'view'
+  | string;
 
 export type Subjects =
   | 'User'
@@ -20,7 +20,8 @@ export type Subjects =
   | 'Remark'
   | 'Dashboard'
   | 'Profile'
-  | 'all';
+  | 'all'
+  | string;
 
 export type AppAbility = Ability<[Actions, Subjects]>;
 
@@ -33,19 +34,16 @@ export const createAbility = (user: User | null): AppAbility => {
     return build();
   }
 
-  switch (user.role) {
-    case UserRole.ADMIN:
-      can('manage', 'all');
-      break;
+  const permissions = user.permissions || [];
 
-    case UserRole.STAFFS:
-      can('read', 'Dashboard');
-      can('read', 'Project');
-      can('read', 'Profile');
-      can('update', 'Profile');
-      break;
+  if (permissions.some((permission) => permission.action === 'manage' && permission.subject === 'all')) {
+    can('manage', 'all');
+    return build();
+  }
+
+  for (const permission of permissions) {
+    can(permission.action, permission.subject);
   }
 
   return build();
 };
-

@@ -1,5 +1,10 @@
 import type { H3Event } from 'h3'
 import { generateCSRFToken, validateCSRFToken } from './csrf'
+import { SUPERADMIN_SESSION_COOKIE } from '../constants/superadmin/session'
+
+const getCsrfSessionId = (event: H3Event): string | null => {
+  return getCookie(event, 'session_token') || getCookie(event, SUPERADMIN_SESSION_COOKIE) || null
+}
 
 export async function requireCSRF(event: H3Event): Promise<void> {
   const method = getMethod(event)
@@ -8,7 +13,7 @@ export async function requireCSRF(event: H3Event): Promise<void> {
     return
   }
 
-  const sessionToken = getCookie(event, 'session_token')
+  const sessionToken = getCsrfSessionId(event)
   
   if (!sessionToken) {
     throw createError({
@@ -35,7 +40,7 @@ export async function requireCSRF(event: H3Event): Promise<void> {
 }
 
 export function generateCSRFTokenForSession(event: H3Event): string | null {
-  const sessionToken = getCookie(event, 'session_token')
+  const sessionToken = getCsrfSessionId(event)
   
   if (!sessionToken) {
     return null
