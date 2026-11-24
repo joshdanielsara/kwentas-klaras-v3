@@ -43,10 +43,20 @@ export default defineNuxtConfig({
     build: {
       chunkSizeWarningLimit: 600,
     },
-    // Pre-bundle at startup so first visit to map/excel pages does not
-    // trigger "optimized dependencies changed. reloading" mid-session.
+    // Pre-bundle at startup so first page hits do not trigger
+    // "optimized dependencies changed. reloading" mid-session.
     optimizeDeps: {
-      include: ['xlsx', 'leaflet'],
+      include: [
+        'xlsx',
+        'leaflet',
+        'jspdf',
+        'apexcharts',
+        'vue3-apexcharts',
+        '@casl/ability',
+        '@casl/vue',
+        'firebase/app',
+        'firebase/auth',
+      ],
     },
   },
 
