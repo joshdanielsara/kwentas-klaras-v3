@@ -6,6 +6,11 @@ export interface IProjectActivityRepository {
     action: string
     description: string
     userId?: string
+    actorType?: string
+    actorId?: string
+    actorRoleSnapshot?: string
+    source?: string
+    canonVersion?: number
     metadata?: string
     integrityHash?: string
     createdAt?: Date

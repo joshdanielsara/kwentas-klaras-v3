@@ -8,7 +8,8 @@ This document lists all required environment variables for the Kwentas Klaras v3
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `MONGODB_URI` | MongoDB connection string | `mongodb+srv://user:password@cluster.mongodb.net/dbname?retryWrites=true&w=majority` |
+| `MONGODB_URI` | Main app MongoDB connection string | `mongodb+srv://user:password@cluster.mongodb.net/dbname?retryWrites=true&w=majority` |
+| `INTEGRITY_ARCHIVE_MONGODB_URI` | Optional **separate** Atlas cluster for seal evidence archive (not the app DB) | `mongodb+srv://integrity_storage:***@kwentas-klaras-integrit….mongodb.net/integrity_archive?retryWrites=true&w=majority` |
 
 ### Firebase Admin SDK (Server-side)
 
@@ -41,6 +42,27 @@ These are exposed to the client-side and used for frontend authentication.
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `APP_URL` | Your application URL | `https://kwentas-klaras-v3.vercel.app` |
+
+### Integrity evidence archive (optional env fallback)
+
+Prefer configuring this in **Superadmin → Integrity archive**. Env vars are a bootstrap / emergency fallback when App Settings are empty.
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `INTEGRITY_ARCHIVE_PROVIDER` | `none` \| `mongo` \| `vercel_blob` \| `local` \| `r2` \| `s3` \| `gcs` | `mongo` |
+| `INTEGRITY_ARCHIVE_MONGODB_URI` | Separate Atlas URI for Mongo archive provider | `mongodb+srv://…/integrity_archive?retryWrites=true&w=majority` |
+| `INTEGRITY_ARCHIVE_VERCEL_BLOB_TOKEN` | Optional Blob token override | |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob token (used when provider is `vercel_blob`) | from Vercel Blob store |
+| `INTEGRITY_ARCHIVE_LOCAL_ROOT` | Directory for Local disk provider | `storage/integrity-evidence` |
+| `INTEGRITY_ARCHIVE_BUCKET` | Bucket name (R2/S3/GCS) | `kwentas-seals` |
+| `INTEGRITY_ARCHIVE_ACCESS_KEY_ID` | Access key / HMAC key id | |
+| `INTEGRITY_ARCHIVE_SECRET_ACCESS_KEY` | Secret | |
+| `INTEGRITY_ARCHIVE_ENDPOINT` | Required for R2; optional for S3; GCS defaults to `https://storage.googleapis.com` | `https://<accountid>.r2.cloudflarestorage.com` |
+| `INTEGRITY_ARCHIVE_REGION` | Region (`auto` for R2/GCS) | `auto` |
+| `INTEGRITY_ARCHIVE_KEY_PREFIX` | Object key / subfolder prefix | `integrity-evidence/` |
+| `INTEGRITY_ARCHIVE_FORCE_PATH_STYLE` | `true` / `false` (R2 forces path-style) | `true` |
+
+On **Vercel**, prefer `mongo` (second cluster) or `vercel_blob`. Local disk is not durable on serverless. R2/S3/GCS share one S3-compatible client.
 
 ### Superadmin (env-only, not a Firebase/DB user)
 

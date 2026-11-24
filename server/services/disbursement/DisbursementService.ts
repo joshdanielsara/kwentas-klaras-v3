@@ -1,9 +1,11 @@
+import { INTEGRITY_APPROVAL_RESOURCE } from '../../../app/constants/audit/integrityApproval';
 import { DisbursementRepository } from '../../repositories/disbursement/DisbursementRepository';
 import { DisbursementSerializer } from '../../serializers/DisbursementSerializer';
 import { ProjectRepository } from '../../repositories/project/ProjectRepository';
 import { ObligationRepository } from '../../repositories/obligation/ObligationRepository';
 import { ComputationService } from '../computation/ComputationService';
 import { ProjectActivityService } from '../project/ProjectActivityService';
+import { linkMoneyApproval } from '../../utils/auditIntegrity/linkMoneyApproval';
 import type { PrismaClient } from '@prisma/client';
 import { prisma } from '../../lib/prisma';
 
@@ -108,14 +110,27 @@ export class DisbursementService {
       status: data.status || 'pending',
     });
 
+    await linkMoneyApproval({
+      projectId: data.projectId,
+      resourceType: INTEGRITY_APPROVAL_RESOURCE.DISBURSEMENT,
+      resourceId: disbursement.id,
+      approvedBy: data.approvedBy,
+      approvedDate: data.approvedDate,
+      status: data.status,
+      updateResource: (id, patch) => this.repo.update(id, patch),
+    });
+
     const formattedAmount = `₱${data.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     await this.activityService.create({
       projectId: data.projectId,
       action: 'disbursement_added',
       description: `Disbursement of <strong>${formattedAmount}</strong> was added. Payee: <strong>${data.payee.trim()}</strong>. Reason: ${data.reason.trim()}`,
+      actorId: data.approvedBy,
+      actorRoleSnapshot: data.approvedBy ? 'approver' : undefined,
     });
 
-    return DisbursementSerializer.detail(disbursement);
+    const fresh = await this.repo.findById(disbursement.id);
+    return DisbursementSerializer.detail(fresh || disbursement);
   }
 
   async updateStatus(id: string, status: 'pending' | 'approved' | 'denied', approvedBy?: string, approvedDate?: Date) {

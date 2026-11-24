@@ -20,6 +20,7 @@
     />
 
     <p v-if="errorMessage" class="text-sm text-red-600">{{ errorMessage }}</p>
+    <p v-if="packError" class="text-sm text-red-600">{{ packError }}</p>
 
     <div
       v-if="showTimeline"
@@ -35,6 +36,17 @@
       <ProjectIntegrityTimeline :steps="integrity?.timeline || []" />
     </div>
 
+    <ProjectIntegrityMoneyTrail
+      :trail="integrity?.moneyTrail"
+      @download-pack="onDownloadPack"
+    />
+
+    <ProjectIntegritySealHistory
+      :entries="integrity?.sealHistory || []"
+      :project-id="projectId"
+      @download-pack="onDownloadPack"
+    />
+
     <ProjectIntegrityTechnicalDetails
       v-if="integrity?.merkleRoot"
       :sealed-at="integrity.sealedAt"
@@ -44,6 +56,8 @@
       :sealed-count="integrity.sealedCount"
       :activity-count="integrity.activityCount"
       :verify-detail="integrity.verifyDetail"
+      :history-batch-count="integrity.historyBatchCount"
+      :history-verified-count="integrity.historyVerifiedCount"
       :reloading="checking"
       @reload="emit('reload-stamp')"
     />
@@ -54,13 +68,16 @@
 import ProjectIntegrityAlterations from '~/components/public/ProjectIntegrityAlterations.vue'
 import ProjectIntegrityTimeline from '~/components/public/ProjectIntegrityTimeline.vue'
 import ProjectIntegrityTechnicalDetails from '~/components/public/ProjectIntegrityTechnicalDetails.vue'
+import ProjectIntegrityMoneyTrail from '~/components/public/ProjectIntegrityMoneyTrail.vue'
+import ProjectIntegritySealHistory from '~/components/public/ProjectIntegritySealHistory.vue'
 import {
   INTEGRITY_PANEL_CHECKING_LABEL,
   INTEGRITY_PANEL_RECHECK_LABEL,
 } from '~/constants/audit/integrityPanelActions'
 import type { PublicProjectIntegrity } from '~/types/audit/publicIntegrity'
+import { useIntegrityLeafPackDownload } from '~/composables/public/useIntegrityLeafPackDownload'
 
-defineProps<{
+const props = defineProps<{
   integrity: PublicProjectIntegrity | null
   checking: boolean
   errorMessage: string
@@ -74,4 +91,11 @@ const emit = defineEmits<{
   recheck: []
   'reload-stamp': []
 }>()
+
+const { errorMessage: packError, downloadLeafPack } = useIntegrityLeafPackDownload()
+
+const onDownloadPack = async (kind: string, recordId: string) => {
+  const leafKind = kind === 'appropriation' ? 'project' : kind
+  await downloadLeafPack(props.projectId, leafKind, recordId)
+}
 </script>

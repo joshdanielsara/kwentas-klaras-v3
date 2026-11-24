@@ -16,9 +16,10 @@
     "seed:roles-permissions": "npx tsx seeders/seedRolesPermissions.ts",
     "seed:catalogs": "npx tsx seeders/seedDepartmentsLocations.ts",
     "seal:audit-batches": "npx tsx seeders/sealAuditBatches.ts",
-    "test:unit": "node --import tsx --test app/constants/rbac/__tests__/permissionCatalog.test.ts app/constants/admin/__tests__/adminNavPermissions.test.ts app/constants/project/__tests__/detailTabPermissions.test.ts app/constants/superadmin/__tests__/catalogResources.test.ts app/utils/__tests__/adminNavAccess.test.ts app/utils/catalog/__tests__/normalizeCatalogName.test.ts app/utils/user/__tests__/roleRequiresDepartment.test.ts app/utils/user/__tests__/formatRoleLabel.test.ts server/utils/auditIntegrity/__tests__/canonicalizeActivity.test.ts server/utils/auditIntegrity/__tests__/merkleTree.test.ts server/utils/auditIntegrity/__tests__/mapPublicIntegrityStatus.test.ts server/utils/auditIntegrity/__tests__/buildPublicIntegrityTimeline.test.ts server/utils/auditIntegrity/__tests__/verifyBatchIntegrity.test.ts server/utils/auditIntegrity/__tests__/canonicalizeProject.test.ts server/utils/auditIntegrity/__tests__/diffProjectIntegritySnapshots.test.ts server/utils/settings/__tests__/normalizeCarouselIntervalSeconds.test.ts server/utils/__tests__/permissionKey.test.ts server/utils/__tests__/roleSlug.test.ts server/utils/__tests__/superadminSessionCrypto.test.ts app/abilities/__tests__/createAbility.test.ts app/constants/audit/__tests__/integrityTechnicalDetailsCopy.test.ts app/constants/audit/__tests__/integrityVerifyDetail.test.ts app/constants/audit/__tests__/integrityPanelActions.test.ts app/constants/audit/__tests__/integrityAlterationsCopy.test.ts"
+    "test:unit": "node --import tsx --test app/constants/rbac/__tests__/permissionCatalog.test.ts app/constants/admin/__tests__/adminNavPermissions.test.ts app/constants/project/__tests__/detailTabPermissions.test.ts app/constants/superadmin/__tests__/catalogResources.test.ts app/utils/__tests__/adminNavAccess.test.ts app/utils/catalog/__tests__/normalizeCatalogName.test.ts app/utils/user/__tests__/roleRequiresDepartment.test.ts app/utils/user/__tests__/formatRoleLabel.test.ts server/utils/auditIntegrity/__tests__/canonicalizeActivity.test.ts server/utils/auditIntegrity/__tests__/merkleTree.test.ts server/utils/auditIntegrity/__tests__/mapPublicIntegrityStatus.test.ts server/utils/auditIntegrity/__tests__/buildPublicIntegrityTimeline.test.ts server/utils/auditIntegrity/__tests__/verifyBatchIntegrity.test.ts server/utils/auditIntegrity/__tests__/canonicalizeProject.test.ts server/utils/auditIntegrity/__tests__/diffProjectIntegritySnapshots.test.ts server/utils/auditIntegrity/__tests__/financialRecordIntegrity.test.ts server/utils/auditIntegrity/__tests__/archiveIntegrityEvidence.test.ts server/utils/settings/__tests__/normalizeIntegrityArchiveSettings.test.ts server/utils/settings/__tests__/normalizeCarouselIntervalSeconds.test.ts server/utils/__tests__/permissionKey.test.ts server/utils/__tests__/roleSlug.test.ts server/utils/__tests__/superadminSessionCrypto.test.ts app/abilities/__tests__/createAbility.test.ts app/constants/audit/__tests__/integrityTechnicalDetailsCopy.test.ts app/constants/audit/__tests__/integrityVerifyDetail.test.ts app/constants/audit/__tests__/integrityPanelActions.test.ts app/constants/audit/__tests__/integrityAlterationsCopy.test.ts app/constants/audit/__tests__/integrityFinancialKinds.test.ts app/constants/audit/__tests__/integrityArchiveProviders.test.ts server/utils/objectStore/__tests__/localObjectStore.test.ts server/utils/auditIntegrity/__tests__/buildCoaIntegrityPackZip.test.ts server/utils/auditIntegrity/__tests__/aggregateHistoricalBatchVerify.test.ts app/constants/audit/__tests__/integrityHistoryScope.test.ts server/utils/auditIntegrity/__tests__/buildFollowTheMoneyTrail.test.ts server/utils/auditIntegrity/__tests__/buildLeafInclusionPack.test.ts server/utils/auditIntegrity/__tests__/buildSealHistoryEntries.test.ts server/utils/auditIntegrity/__tests__/attachMoneyApprovalSealFields.test.ts app/constants/audit/__tests__/integrityActor.test.ts app/constants/audit/__tests__/integrityApproval.test.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1176.0",
     "@casl/ability": "^6.7.5",
     "@casl/vue": "^2.2.5",
     "@getbrevo/brevo": "^3.0.1",
@@ -33,6 +34,7 @@
     "@prisma/client": "^6.19.0",
     "@types/zxcvbn": "^4.4.5",
     "@unhead/vue": "^2.0.19",
+    "@vercel/blob": "^2.9.0",
     "@vue-leaflet/vue-leaflet": "^0.10.1",
     "@vuepic/vue-datepicker": "^12.1.0",
     "apexcharts": "^5.3.6",
@@ -42,6 +44,7 @@
     "firebase": "^12.6.0",
     "firebase-admin": "^13.6.0",
     "jspdf": "^4.0.0",
+    "jszip": "^3.10.2",
     "leaflet": "^1.9.4",
     "mongodb": "^7.0.0",
     "nuxt": "^4.2.1",
@@ -56,6 +59,7 @@
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
+    "@types/jszip": "^3.4.0",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^24.10.4",
     "@types/swagger-jsdoc": "^6.0.4",

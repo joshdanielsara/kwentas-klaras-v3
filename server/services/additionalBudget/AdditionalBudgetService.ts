@@ -1,6 +1,8 @@
+import { INTEGRITY_APPROVAL_RESOURCE } from '../../../app/constants/audit/integrityApproval';
 import { AdditionalBudgetRepository } from '../../repositories/additionalBudget/AdditionalBudgetRepository';
 import { AdditionalBudgetSerializer } from '../../serializers/AdditionalBudgetSerializer';
 import { ProjectActivityService } from '../project/ProjectActivityService';
+import { linkMoneyApproval } from '../../utils/auditIntegrity/linkMoneyApproval';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
 export class AdditionalBudgetService {
@@ -48,14 +50,27 @@ export class AdditionalBudgetService {
       status: data.status || 'pending',
     });
 
+    await linkMoneyApproval({
+      projectId: data.projectId,
+      resourceType: INTEGRITY_APPROVAL_RESOURCE.BUDGET,
+      resourceId: budget.id,
+      approvedBy: data.approvedBy,
+      approvedDate: data.approvedDate,
+      status: data.status,
+      updateResource: (id, patch) => this.repo.updateById(id, patch),
+    });
+
     const formattedAmount = `₱${data.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     await this.activityService.create({
       projectId: data.projectId,
       action: 'budget_added',
       description: `Additional budget of <strong>${formattedAmount}</strong> was added. Reason: ${data.reason.trim()}`,
+      actorId: data.approvedBy,
+      actorRoleSnapshot: data.approvedBy ? 'approver' : undefined,
     });
 
-    return AdditionalBudgetSerializer.detail(budget);
+    const fresh = await this.repo.findById(budget.id);
+    return AdditionalBudgetSerializer.detail(fresh || budget);
   }
 
   async update(id: string, data: {

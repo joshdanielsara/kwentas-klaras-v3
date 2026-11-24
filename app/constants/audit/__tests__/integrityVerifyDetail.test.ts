@@ -6,6 +6,7 @@ import { PUBLIC_INTEGRITY_LABELS, PUBLIC_INTEGRITY_STATUS } from '../integritySt
 describe('integrityVerifyDetail', () => {
   it('uses short badge-friendly verify messages', () => {
     assert.equal(INTEGRITY_VERIFY_DETAIL.PROJECT_DATA_MISMATCH, 'Project data altered')
+    assert.equal(INTEGRITY_VERIFY_DETAIL.FINANCIAL_DATA_MISMATCH, 'Financial records altered')
     assert.equal(INTEGRITY_VERIFY_DETAIL.ACTIVITY_HASH_MISMATCH, 'Activity history altered')
   })
 

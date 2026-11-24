@@ -43,6 +43,11 @@ export default defineNuxtConfig({
     build: {
       chunkSizeWarningLimit: 600,
     },
+    // Pre-bundle at startup so first visit to map/excel pages does not
+    // trigger "optimized dependencies changed. reloading" mid-session.
+    optimizeDeps: {
+      include: ['xlsx', 'leaflet'],
+    },
   },
 
   nitro: {

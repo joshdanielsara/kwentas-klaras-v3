@@ -22,6 +22,7 @@ export const buildPublicIntegrityTimeline = (input: {
   verified?: boolean | null
   verifyDetail?: string | null
   checkedAt?: Date | string | null
+  actorSummary?: string | null
 }): PublicIntegrityTimelineStep[] => {
   const steps: PublicIntegrityTimelineStep[] = []
 
@@ -29,10 +30,14 @@ export const buildPublicIntegrityTimeline = (input: {
     return steps
   }
 
+  const recordedDetail = input.actorSummary
+    ? `${input.activityCount} activit${input.activityCount === 1 ? 'y' : 'ies'} on file · latest actor: ${input.actorSummary}`
+    : `${input.activityCount} activit${input.activityCount === 1 ? 'y' : 'ies'} on file`
+
   steps.push({
     kind: INTEGRITY_TIMELINE_STEP.RECORDED,
     label: INTEGRITY_TIMELINE_LABELS[INTEGRITY_TIMELINE_STEP.RECORDED],
-    detail: `${input.activityCount} activit${input.activityCount === 1 ? 'y' : 'ies'} on file`,
+    detail: recordedDetail,
     at: null,
     tone: INTEGRITY_TIMELINE_TONE.NEUTRAL,
   })

@@ -10,6 +10,8 @@ import {
   serializeProjectDataSealMap,
 } from '../parseProjectDataHashes'
 import { toProjectIntegritySnapshot } from '../projectIntegritySnapshot'
+import { buildFinancialDataSealMap } from '../buildFinancialDataSealMap'
+import { serializeFinancialDataSealMap } from '../parseFinancialDataSeals'
 
 const makeActivity = (
   overrides: Partial<ProjectActivity> & {
@@ -120,5 +122,54 @@ describe('verifyBatchIntegrity', () => {
     assert.equal(result.alterations.length, 2)
     assert.ok(result.alterations.some((item) => item.field === 'name'))
     assert.ok(result.alterations.some((item) => item.field === 'appropriation'))
+  })
+
+  it('fails when sealed obligation amount was altered', async () => {
+    const a = makeActivity({ id: 'a', projectId: 'p1', merkleIndex: 0 })
+    const sealedFinancial = buildFinancialDataSealMap({
+      budgets: [],
+      obligations: [
+        {
+          id: 'o1',
+          projectId: 'p1',
+          amount: 1000,
+          reason: 'Works',
+          status: 'approved',
+          payee: 'ABC',
+        },
+      ],
+      disbursements: [],
+    })
+    const currentFinancial = buildFinancialDataSealMap({
+      budgets: [],
+      obligations: [
+        {
+          id: 'o1',
+          projectId: 'p1',
+          amount: 1800,
+          reason: 'Works',
+          status: 'approved',
+          payee: 'ABC',
+        },
+      ],
+      disbursements: [],
+    })
+    const financialLeaf = sealedFinancial.obligations.o1.hash
+    const merkleRoot = buildMerkleRoot([a.integrityHash as string, financialLeaf])
+
+    const result = await verifyBatchIntegrity({
+      projectId: 'p1',
+      projectActivities: [a],
+      batchActivities: [a],
+      merkleRoot,
+      otsProof: null,
+      financialDataHashesJson: serializeFinancialDataSealMap(sealedFinancial),
+      currentFinancialSeals: currentFinancial,
+    })
+
+    assert.equal(result.financialDataMatch, false)
+    assert.equal(result.verified, false)
+    assert.equal(result.detail, 'Financial records altered')
+    assert.ok(result.alterations.some((item) => item.field.includes('amount')))
   })
 })

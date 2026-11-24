@@ -18,19 +18,38 @@ export class AuditIntegrityBatchRepository implements IAuditIntegrityBatchReposi
   }
 
   async findLatestForProject(projectId: string): Promise<AuditIntegrityBatch | null> {
-    const activity = await this.client.projectActivity.findFirst({
+    const batches = await this.findAllForProject(projectId)
+    return batches[0] ?? null
+  }
+
+  async findManyByIds(ids: string[]): Promise<AuditIntegrityBatch[]> {
+    if (ids.length === 0) {
+      return []
+    }
+    return this.client.auditIntegrityBatch.findMany({
+      where: { id: { in: ids } },
+      orderBy: { sealedAt: 'desc' },
+    })
+  }
+
+  async findAllForProject(projectId: string): Promise<AuditIntegrityBatch[]> {
+    const activities = await this.client.projectActivity.findMany({
       where: {
         projectId,
         batchId: { not: null },
       },
-      orderBy: { createdAt: 'desc' },
+      select: { batchId: true },
     })
 
-    if (!activity?.batchId) {
-      return null
-    }
+    const batchIds = [
+      ...new Set(
+        activities
+          .map((activity) => activity.batchId)
+          .filter((batchId): batchId is string => Boolean(batchId))
+      ),
+    ]
 
-    return this.client.auditIntegrityBatch.findUnique({ where: { id: activity.batchId } })
+    return this.findManyByIds(batchIds)
   }
 
   async updateById(

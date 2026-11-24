@@ -9,7 +9,7 @@ export const PUBLIC_INTEGRITY_HELPER: Record<PublicIntegrityStatus, string> = {
     'A newer activity was just recorded and is being sealed automatically. Wait a few seconds — the check refreshes on its own. This is normal after an edit — not tampering.',
   [PUBLIC_INTEGRITY_STATUS.SEALED]: PUBLIC_INTEGRITY_HELPER_DEFAULT,
   [PUBLIC_INTEGRITY_STATUS.VERIFIED]:
-    'Check passed — sealed project data and activity history still match what is on file.',
+    'Check passed — every sealed batch for this project still matches (not only the latest seal).',
   [PUBLIC_INTEGRITY_STATUS.FAILED]:
-    'Check failed — sealed project data or activity history no longer matches what is on file.',
+    'Check failed — a sealed batch no longer matches (project data, money rows, activity history, or a missing seal leaf).',
 }

@@ -14,9 +14,13 @@ export const INTEGRITY_TECHNICAL_FIELD = {
     label: 'What is locked',
     help: 'Project details plus activity log entries.',
   },
+  HISTORY: {
+    label: 'History checked',
+    help: 'Every past seal for this project, not only the latest.',
+  },
   BATCH: {
-    label: 'Seal ID',
-    help: 'Code for staff / auditors.',
+    label: 'Latest seal ID',
+    help: 'Code for staff / auditors (newest seal).',
   },
   ROOT: {
     label: 'Lock code',

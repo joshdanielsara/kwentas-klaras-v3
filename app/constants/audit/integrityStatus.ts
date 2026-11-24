@@ -21,6 +21,6 @@ export const PUBLIC_INTEGRITY_LABELS: Record<PublicIntegrityStatus, string> = {
   [PUBLIC_INTEGRITY_STATUS.NONE]: 'No activity yet',
   [PUBLIC_INTEGRITY_STATUS.PENDING]: 'Sealing new activity',
   [PUBLIC_INTEGRITY_STATUS.SEALED]: 'Records sealed',
-  [PUBLIC_INTEGRITY_STATUS.VERIFIED]: 'Verified just now',
+  [PUBLIC_INTEGRITY_STATUS.VERIFIED]: 'All sealed history verified',
   [PUBLIC_INTEGRITY_STATUS.FAILED]: 'Records altered',
 }

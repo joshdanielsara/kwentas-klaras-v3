@@ -5,7 +5,8 @@ import {
 import type { ProjectIntegritySnapshot } from './projectIntegritySnapshot'
 
 export interface ProjectIntegrityAlteration {
-  field: IntegrityProjectFieldKey
+  /** Project field key or financial path like `obligation.<id>.amount`. */
+  field: string
   label: string
   sealedValue: string
   currentValue: string

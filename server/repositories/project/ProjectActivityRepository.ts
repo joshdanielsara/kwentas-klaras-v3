@@ -14,6 +14,11 @@ export class ProjectActivityRepository implements IProjectActivityRepository {
     action: string
     description: string
     userId?: string
+    actorType?: string
+    actorId?: string
+    actorRoleSnapshot?: string
+    source?: string
+    canonVersion?: number
     metadata?: string
     integrityHash?: string
     createdAt?: Date
@@ -24,6 +29,11 @@ export class ProjectActivityRepository implements IProjectActivityRepository {
         action: data.action,
         description: data.description,
         userId: data.userId,
+        actorType: data.actorType,
+        actorId: data.actorId,
+        actorRoleSnapshot: data.actorRoleSnapshot,
+        source: data.source,
+        canonVersion: data.canonVersion,
         metadata: data.metadata,
         integrityHash: data.integrityHash,
         createdAt: data.createdAt,
